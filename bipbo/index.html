@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>🐾 Truy Bắt Bíp Bơ</title>
+    <meta name="description" content="Chào mừng đến với Truy Bắt Bíp Bơ - Hãy bắt lấy Bíp và Bơ đáng yêu nhé!">
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <!-- ========== BACKGROUND MUSIC (YouTube) ========== -->
+    <iframe id="bgMusic"
+        src="https://www.youtube.com/embed/p93nyFK-9YA?autoplay=1&loop=1&playlist=p93nyFK-9YA&controls=0&showinfo=0&rel=0&mute=0&enablejsapi=1"
+        style="position: fixed; top: -1000px; left: -1000px; width: 1px; height: 1px; opacity: 0; pointer-events: none;"
+        allow="autoplay; encrypted-media" allowfullscreen>
+    </iframe>
+
+    <!-- Volume Control handled in Settings -->
+
+
+    <!-- ========== MAIN MENU ========== -->
+    <div class="menu-screen" id="menuScreen">
+        <div class="menu-mascot">🐕</div>
+        <h1 class="menu-title">Truy Bắt Bíp Bơ</h1>
+        <p class="menu-subtitle">Hãy bắt lấy Bíp và Bơ đáng yêu nhé! 💕</p>
+
+        <button class="btn btn-play" onclick="startGame()">
+            <span class="btn-icon"></span>
+            Chơi Ngay
+        </button>
+
+        <button class="btn btn-skin" onclick="openSkinModal()">
+            <span class="btn-icon"></span>
+            Đổi Skin
+        </button>
+
+        <button class="btn btn-shop" onclick="openShop()">
+            <span class="btn-icon">🛒</span>
+            Cửa Hàng
+        </button>
+
+        <div class="stats-panel">
+            <div class="stats-title">
+                <div class="trophy-icon"></div>
+                Số lần thắng
+            </div>
+            <div class="stats-value" id="menuWinCount">0</div>
+            <div class="coin-stats">
+                <span class="coin-icon">🪙</span>
+                <span id="menuCoins">0</span>
+            </div>
+            <div class="stats-hint">Màn 2: Map mới • Màn 3-4: Map đặc biệt!</div>
+        </div>
+    </div>
+
+    <!-- ========== SKIN MODAL ========== -->
+    <div class="skin-modal" id="skinModal">
+        <div class="skin-content">
+            <h2 class="skin-title">🎨 Chọn Nhân Vật</h2>
+            <div class="skin-grid" id="skinGrid"></div>
+            <button class="btn-close" onclick="closeSkinModal()">Xác Nhận</button>
+        </div>
+    </div>
+
+    <!-- ========== SHOP MODAL ========== -->
+    <div class="skin-modal" id="shopModal">
+        <div class="skin-content shop-content">
+            <h2 class="skin-title">🛒 Cửa Hàng Trang Bị</h2>
+            <div class="shop-grid">
+                <!-- Staff -->
+                <div class="shop-item" id="itemStaff">
+                    <div class="item-icon">🦯</div>
+                    <div class="item-info">
+                        <div class="item-name">Gậy Bắt Chó</div>
+                        <div class="item-desc">Tăng tầm bắt thú cưng thêm 20%</div>
+                    </div>
+                    <button class="btn-buy" onclick="buyItem('staff', 50)">50 🪙</button>
+                </div>
+                <!-- Tranquilizer -->
+                <div class="shop-item" id="itemTranquilizer">
+                    <div class="item-icon">🧪</div>
+                    <div class="item-info">
+                        <div class="item-name">Thuốc Mê</div>
+                        <div class="item-desc">Tăng thời gian bắt giữ lên 60 giây</div>
+                    </div>
+                    <button class="btn-buy" onclick="buyItem('tranquilizer', 100)">100 🪙</button>
+                </div>
+                <!-- Speed -->
+                <div class="shop-item" id="itemSpeed">
+                    <div class="item-icon">👟</div>
+                    <div class="item-info">
+                        <div class="item-name">Thuốc Tăng Tốc</div>
+                        <div class="item-desc">Tăng 10% tốc độ chạy của nhân vật</div>
+                    </div>
+                    <button class="btn-buy" onclick="buyItem('speed', 80)">80 🪙</button>
+                </div>
+                <!-- Gloves -->
+                <div class="shop-item" id="itemGloves">
+                    <div class="item-icon">🧤</div>
+                    <div class="item-info">
+                        <div class="item-name">Găng Tay</div>
+                        <div class="item-desc">Tăng 30% tốc độ bắt (tiến trình)</div>
+                    </div>
+                    <button class="btn-buy" onclick="buyItem('gloves', 120)">120 🪙</button>
+                </div>
+            </div>
+            <button class="btn-close" onclick="closeShop()">Đóng</button>
+        </div>
+    </div>
+
+    <!-- ========== GAME CONTAINER ========== -->
+    <div class="game-container" id="gameContainer">
+        <!-- HUD -->
+        <div class="game-hud">
+            <div class="hud-left">
+                <div class="hud-item level-badge">
+                    <span>Màn</span>
+                    <span id="levelDisplay">1</span>
+                </div>
+                <div class="hud-item">
+                    <div class="hud-icon trophy"></div>
+                    <span id="winCount">0</span>/5
+                </div>
+                <div class="hud-item">
+                    <div class="hud-icon timer"></div>
+                    <span id="timer">00:00</span>
+                </div>
+                <div class="hud-item coin-hud">
+                    <span class="hud-coin-icon">🪙</span>
+                    <span id="gameCoins">0</span>
+                </div>
+            </div>
+            <div class="hud-right">
+                <button class="btn-settings" id="settingsBtn" onclick="openSettings()">
+                    <div class="settings-icon">⚙️</div>
+                </button>
+            </div>
+        </div>
+
+        <!-- Stamina Bar -->
+        <div class="stamina-container">
+            <div class="stamina-label">⚡ Năng lượng</div>
+            <div class="stamina-bar-bg">
+                <div class="stamina-bar" id="staminaBar"></div>
+            </div>
+        </div>
+
+        <!-- Decorations -->
+        <div id="decorations"></div>
+
+        <!-- Clouds -->
+        <div class="cloud" style="top: 8%; animation-delay: 0s;">☁️</div>
+        <div class="cloud" style="top: 14%; animation-delay: -8s;">☁️</div>
+        <div class="cloud" style="top: 6%; animation-delay: -16s;">☁️</div>
+
+        <!-- Player -->
+        <div class="character player" id="player">🧒</div>
+
+        <!-- Pets Container -->
+        <div id="petsContainer"></div>
+
+        <!-- Grass -->
+        <div class="grass"></div>
+
+        <!-- Tutorial -->
+        <div class="tutorial" id="tutorial">
+            <div class="pc-tutorial">
+                💡 Dùng phím <b>mũi tên</b> / <b>WASD</b> để di chuyển<br>
+                Giữ <b>Shift</b> để chạy nhanh • Đuổi kịp để bắt! 🐾
+            </div>
+            <div class="mobile-tutorial">
+                💡 Sử dụng bộ điều khiển để di chuyển<br>
+                Nút <b>Sấm sét</b> để chạy nhanh • Đuổi kịp để bắt! 🐾
+            </div>
+        </div>
+
+        <!-- Catch Progress -->
+        <div class="catch-label" id="catchLabel">Đang bắt...</div>
+        <div class="catch-progress" id="catchProgress">
+            <div class="catch-progress-bar" id="catchProgressBar"></div>
+        </div>
+
+        <!-- Mobile Controls -->
+        <div class="mobile-controls" id="mobileControls">
+            <div class="control-pad">
+                <button class="control-btn up" id="btnUp">
+                    <div class="arrow"></div>
+                </button>
+                <button class="control-btn down" id="btnDown">
+                    <div class="arrow"></div>
+                </button>
+                <button class="control-btn left" id="btnLeft">
+                    <div class="arrow"></div>
+                </button>
+                <button class="control-btn right" id="btnRight">
+                    <div class="arrow"></div>
+                </button>
+            </div>
+        </div>
+
+        <!-- Sprint Button for Mobile -->
+        <button class="btn-sprint" id="btnSprint">
+            <div class="sprint-icon">
+                <span></span>
+                <span></span>
+            </div>
+            <span class="sprint-label">CHẠY</span>
+        </button>
+    </div>
+
+    <!-- ========== WIN SCREEN ========== -->
+    <div class="win-screen" id="winScreen">
+        <div class="win-mascot" id="winMascot">🎉</div>
+        <h1 class="win-title">Tuyệt Vời!</h1>
+        <div class="win-stats" id="winStats">Bạn đã bắt được thú cưng!</div>
+
+        <div class="win-buttons">
+            <button class="btn btn-continue" onclick="continueGame()">
+                <span class="btn-icon"></span>
+                Tiếp Tục
+            </button>
+            <button class="btn btn-home" onclick="goToMenu()">
+                <span class="btn-icon"></span>
+                Về Menu
+            </button>
+        </div>
+    </div>
+
+    <!-- ========== SETTINGS MODAL ========== -->
+    <div class="settings-modal" id="settingsModal">
+        <div class="settings-content">
+            <h2 class="settings-title">⚙️ Cài Đặt</h2>
+
+            <div class="setting-group">
+                <label>🎵 Âm nhạc</label>
+                <div class="music-toggle-row">
+                    <button class="music-control-small" id="musicToggleInside" onclick="toggleMusic()">
+                        <div class="music-bars">
+                            <span class="bar"></span>
+                            <span class="bar"></span>
+                            <span class="bar"></span>
+                            <span class="bar"></span>
+                        </div>
+                    </button>
+                    <input type="range" id="volumeSlider" min="0" max="100" value="50"
+                        oninput="updateVolume(this.value)">
+                </div>
+            </div>
+
+            <div class="setting-group">
+                <label>🧒 Thay Skin Nhanh</label>
+                <div class="skin-grid-mini" id="skinGridMini"></div>
+            </div>
+
+            <div class="settings-footer">
+                <button class="btn btn-home-small" onclick="goToMenuFromSettings()">Về Menu</button>
+                <button class="btn btn-close-small" onclick="closeSettings()">Đóng</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========== SKIN UNLOCK MODAL ========== -->
+    <div class="gameplay-modal" id="skinUnlockModal">
+        <div class="gameplay-content">
+            <div class="gameplay-icon" id="unlockIcon">🧥</div>
+            <h2 class="gameplay-title">Mở Khóa Trang Phục!</h2>
+            <div class="gameplay-body" id="unlockBody">
+                Bạn đã nhận được một bộ trang phục mới đặc biệt.
+            </div>
+            <div class="unlock-footer">
+                <button class="btn btn-equip" id="equipBtn">Trang Bị Ngay</button>
+                <button class="btn-close" onclick="closeSkinUnlockModal()">Để Sau</button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ========== GAMEPLAY UPDATE MODAL ========== -->
+    <div class="gameplay-modal" id="gameplayModal">
+        <div class="gameplay-content">
+            <div class="gameplay-icon">🚀</div>
+            <h2 class="gameplay-title" id="gameplayTitle">Cập Nhật Gameplay</h2>
+            <div class="gameplay-body" id="gameplayBody">
+                Hệ thống đã được nâng cấp!
+            </div>
+            <button class="btn-close" onclick="closeGameplayModal()">Đã Hiểu</button>
+        </div>
+    </div>
+
+    <!-- ========== LEVEL NOTIFICATION ========== -->
+    <div class="level-notification" id="levelNotification"></div>
+
+    <script src="script.js"></script>
+
+    <script>
+        // Show sprint button on mobile
+        if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
+            document.getElementById('btnSprint').style.display = 'flex';
+            document.getElementById('btnSprint').style.alignItems = 'center';
+            document.getElementById('btnSprint').style.justifyContent = 'center';
+        }
+    </script>
+</body>
+
+</html>

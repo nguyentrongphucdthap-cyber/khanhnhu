@@ -19,8 +19,20 @@ const gameState = {
     coins: 0,
     volume: 50,
     unlockedSkins: ['skin1'],
-    upgrades: { staff: false, tranquilizer: false, speed: false, gloves: false },
-    isStunned: false, stunEnd: 0
+    upgrades: { staff: false, tranquilizer: false, speed: false, gloves: false, ledger: false },
+    isStunned: false, stunEnd: 0,
+
+    // Consumables inventory
+    consumables: { banana: 0, bucket: 0, pepper: 0 },
+    // Consumables used this round (reset each game)
+    consumablesUsedThisRound: { banana: false, bucket: false, pepper: false },
+
+    // Active effects
+    effects: {
+        petStunned: false, petStunEnd: 0,
+        petSlowed: false, petSlowEnd: 0, petSlowAmount: 0,
+        easyCatch: false, easyCatchEnd: 0
+    }
 };
 
 // Skin images from img folder
@@ -39,7 +51,9 @@ function initElements() {
         'staminaBar', 'settingsBtn', 'levelDisplay', 'musicToggleInside', 'bgMusic',
         'gameplayModal', 'gameplayTitle', 'gameplayBody', 'menuCoins', 'gameCoins',
         'settingsModal', 'skinGridMini', 'volumeSlider', 'skinUnlockModal', 'unlockBody', 'unlockIcon', 'equipBtn',
-        'shopModal'].forEach(id => elements[id] = document.getElementById(id));
+        'shopModal', 'consumableBar', 'useBanana', 'useBucket', 'usePepper',
+        'bananaQty', 'bucketQty', 'pepperQty', 'bananaCount', 'bucketCount', 'pepperCount'
+    ].forEach(id => elements[id] = document.getElementById(id));
 }
 
 function init() {
@@ -90,6 +104,13 @@ function init() {
     initSkins();
     initSkinsMini(); // New mini skin grid for settings
     setupControls();
+
+    // Load consumables
+    const savedConsumables = localStorage.getItem('petChase_consumables');
+    if (savedConsumables) {
+        gameState.consumables = JSON.parse(savedConsumables);
+        updateConsumableUI();
+    }
 
     // Ensure music volume is synced when iframe loads
     if (elements.bgMusic) {
@@ -210,6 +231,19 @@ window.startGame = function () {
     // Clear any leftover release timers
     Object.values(gameState.releaseTimers).forEach(t => clearTimeout(t));
     gameState.releaseTimers = {};
+
+    // Reset consumables used this round
+    gameState.consumablesUsedThisRound = { banana: false, bucket: false, pepper: false };
+
+    // Reset active effects
+    gameState.effects = {
+        petStunned: false, petStunEnd: 0,
+        petSlowed: false, petSlowEnd: 0, petSlowAmount: 0,
+        easyCatch: false, easyCatchEnd: 0
+    };
+
+    // Update consumable bar UI
+    updateConsumableBarUI();
 };
 
 function updatePlayer() {
@@ -315,8 +349,29 @@ function gameLoop() {
     // Pet Intelligence Scaling
     const intelStep = Math.floor(gameState.currentLevel / 5);
     const intelBonus = (intelStep * 0.15) * mobileMultiplier;
-    const currentPetSpeed = gameState.petSpeed + (gameState.currentLevel * 0.04 * mobileMultiplier) + intelBonus;
+    let currentPetSpeed = gameState.petSpeed + (gameState.currentLevel * 0.04 * mobileMultiplier) + intelBonus;
     const evadeRadius = (140 + (gameState.currentLevel * 5) + (intelStep * 15)) * mobileMultiplier;
+
+    // Check consumable effects
+    // Pet Stunned (Banana)
+    if (gameState.effects.petStunned && now > gameState.effects.petStunEnd) {
+        gameState.effects.petStunned = false;
+    }
+
+    // Pet Slowed (Bucket)
+    if (gameState.effects.petSlowed) {
+        if (now > gameState.effects.petSlowEnd) {
+            gameState.effects.petSlowed = false;
+            gameState.effects.petSlowAmount = 0;
+        } else {
+            currentPetSpeed *= (1 - gameState.effects.petSlowAmount);
+        }
+    }
+
+    // Easy Catch (Pepper) - Checked in catch logic below
+    if (gameState.effects.easyCatch && now > gameState.effects.easyCatchEnd) {
+        gameState.effects.easyCatch = false;
+    }
 
     let moved = false;
     if (!gameState.isStunned) {
@@ -385,7 +440,11 @@ function gameLoop() {
         }
 
         // Flee Logic + Corner Escape (Level 10+)
-        if (dist < evadeRadius) {
+        // Skip flee if pet is stunned by banana
+        if (gameState.effects.petStunned) {
+            pet.classList.add('stunned-pet');
+            // Pet stands still when stunned
+        } else if (dist < evadeRadius) {
             const a = Math.atan2(dy, dx);
             let fleeSpeed = currentPetSpeed * (1 + (gameState.currentLevel * 0.04) * mobileMultiplier);
             if (dashState.isDashing) fleeSpeed *= 2.5;
@@ -457,10 +516,15 @@ function gameLoop() {
                 py += moveY;
             }
             pet.classList.add('running');
+            pet.classList.remove('stunned-pet');
         } else {
-            px += (Math.random() - 0.5) * currentPetSpeed;
-            py += (Math.random() - 0.5) * currentPetSpeed;
+            // If not stunned and not evading, wander randomly
+            if (!gameState.effects.petStunned) {
+                px += (Math.random() - 0.5) * currentPetSpeed;
+                py += (Math.random() - 0.5) * currentPetSpeed;
+            }
             pet.classList.remove('running');
+            pet.classList.remove('stunned-pet');
         }
 
         px = Math.max(marginL, Math.min(window.innerWidth - marginR, px));
@@ -473,6 +537,10 @@ function gameLoop() {
             nearAnyPet = true;
             let catchSpeed = 2.5;
             if (gameState.upgrades.gloves) catchSpeed *= 1.3;
+            // Easy catch effect from pepper spray
+            if (gameState.effects.easyCatch) catchSpeed *= 1.8;
+            // Pet stunned = even faster catch
+            if (gameState.effects.petStunned) catchSpeed *= 1.5;
             gameState.catchProgress += catchSpeed;
             elements.catchProgress.classList.add('active');
             elements.catchLabel.classList.add('active');
@@ -814,17 +882,113 @@ function setupControls() {
         if (k === 'shift') keys.sprint = false;
     });
 
-    ['Up', 'Down', 'Left', 'Right'].forEach(dir => {
-        const btn = document.getElementById('btn' + dir);
-        if (!btn) return;
-        const key = dir.toLowerCase();
-        btn.addEventListener('touchstart', e => { e.preventDefault(); keys[key] = true; });
-        btn.addEventListener('touchend', e => { e.preventDefault(); keys[key] = false; });
-        btn.addEventListener('mousedown', () => keys[key] = true);
-        btn.addEventListener('mouseup', () => keys[key] = false);
-        btn.addEventListener('mouseleave', () => keys[key] = false);
-    });
+    // ========== JOYSTICK CONTROLS ==========
+    const joystickBase = document.getElementById('joystickBase');
+    const joystickKnob = document.getElementById('joystickKnob');
 
+    if (joystickBase && joystickKnob) {
+        let joystickActive = false;
+        let joystickCenter = { x: 0, y: 0 };
+        const maxDistance = 40; // Max distance knob can move from center
+
+        function getJoystickCenter() {
+            const rect = joystickBase.getBoundingClientRect();
+            return {
+                x: rect.left + rect.width / 2,
+                y: rect.top + rect.height / 2
+            };
+        }
+
+        function updateJoystick(clientX, clientY) {
+            const center = joystickCenter;
+            let dx = clientX - center.x;
+            let dy = clientY - center.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+
+            // Limit to max distance
+            if (distance > maxDistance) {
+                const angle = Math.atan2(dy, dx);
+                dx = Math.cos(angle) * maxDistance;
+                dy = Math.sin(angle) * maxDistance;
+            }
+
+            // Move knob
+            joystickKnob.style.transform = `translate(${dx}px, ${dy}px)`;
+
+            // Calculate direction (with dead zone of 15%)
+            const deadZone = maxDistance * 0.15;
+            const normalizedX = dx / maxDistance;
+            const normalizedY = dy / maxDistance;
+
+            // Set keys based on joystick position
+            keys.up = dy < -deadZone;
+            keys.down = dy > deadZone;
+            keys.left = dx < -deadZone;
+            keys.right = dx > deadZone;
+        }
+
+        function resetJoystick() {
+            joystickKnob.style.transform = 'translate(0, 0)';
+            joystickKnob.classList.remove('active');
+            keys.up = false;
+            keys.down = false;
+            keys.left = false;
+            keys.right = false;
+        }
+
+        // Touch events
+        joystickBase.addEventListener('touchstart', e => {
+            e.preventDefault();
+            joystickActive = true;
+            joystickCenter = getJoystickCenter();
+            joystickKnob.classList.add('active');
+            const touch = e.touches[0];
+            updateJoystick(touch.clientX, touch.clientY);
+        }, { passive: false });
+
+        document.addEventListener('touchmove', e => {
+            if (!joystickActive) return;
+            const touch = e.touches[0];
+            updateJoystick(touch.clientX, touch.clientY);
+        }, { passive: true });
+
+        document.addEventListener('touchend', e => {
+            if (joystickActive) {
+                joystickActive = false;
+                resetJoystick();
+            }
+        });
+
+        document.addEventListener('touchcancel', e => {
+            if (joystickActive) {
+                joystickActive = false;
+                resetJoystick();
+            }
+        });
+
+        // Mouse events (for testing on desktop)
+        joystickBase.addEventListener('mousedown', e => {
+            e.preventDefault();
+            joystickActive = true;
+            joystickCenter = getJoystickCenter();
+            joystickKnob.classList.add('active');
+            updateJoystick(e.clientX, e.clientY);
+        });
+
+        document.addEventListener('mousemove', e => {
+            if (!joystickActive) return;
+            updateJoystick(e.clientX, e.clientY);
+        });
+
+        document.addEventListener('mouseup', () => {
+            if (joystickActive) {
+                joystickActive = false;
+                resetJoystick();
+            }
+        });
+    }
+
+    // Sprint button
     const sprint = document.getElementById('btnSprint');
     if (sprint) {
         sprint.addEventListener('touchstart', e => { e.preventDefault(); keys.sprint = true; });
@@ -871,10 +1035,17 @@ function spawnCoin(mL, mR, mT, mB) {
 }
 
 function collectCoin() {
-    gameState.coins += 1;
+    // Ledger upgrade = x2 coins
+    const coinAmount = gameState.upgrades.ledger ? 2 : 1;
+    gameState.coins += coinAmount;
     elements.gameCoins.textContent = gameState.coins;
     elements.menuCoins.textContent = gameState.coins;
     localStorage.setItem('petChase_coins', gameState.coins);
+
+    // Show notification for x2
+    if (gameState.upgrades.ledger) {
+        showNotify('💰 +2 xu!');
+    }
 
     // Tiny bounce effect on coin display
     elements.gameCoins.parentElement.classList.add('bounce');
@@ -947,6 +1118,103 @@ function applyUpgrades() {
         gameState.catchDistance = 65;
     }
 }
+
+// ========== CONSUMABLES SYSTEM ==========
+
+// Update consumable count in shop
+function updateConsumableUI() {
+    if (elements.bananaCount) elements.bananaCount.textContent = 'x' + gameState.consumables.banana;
+    if (elements.bucketCount) elements.bucketCount.textContent = 'x' + gameState.consumables.bucket;
+    if (elements.pepperCount) elements.pepperCount.textContent = 'x' + gameState.consumables.pepper;
+}
+
+// Update consumable bar in game
+function updateConsumableBarUI() {
+    const items = ['banana', 'bucket', 'pepper'];
+    items.forEach(item => {
+        const btn = document.getElementById('use' + item.charAt(0).toUpperCase() + item.slice(1));
+        const qty = document.getElementById(item + 'Qty');
+        if (btn && qty) {
+            const count = gameState.consumables[item];
+            const usedThisRound = gameState.consumablesUsedThisRound[item];
+            qty.textContent = count;
+
+            // Disable if no items or already used this round
+            if (count <= 0 || usedThisRound) {
+                btn.disabled = true;
+                btn.classList.add('used');
+            } else {
+                btn.disabled = false;
+                btn.classList.remove('used');
+            }
+        }
+    });
+}
+
+// Buy consumable item
+window.buyConsumable = function (itemId, price) {
+    if (gameState.coins >= price) {
+        gameState.coins -= price;
+        gameState.consumables[itemId]++;
+
+        // Update UI
+        elements.menuCoins.textContent = gameState.coins;
+        elements.gameCoins.textContent = gameState.coins;
+        updateConsumableUI();
+        updateConsumableBarUI();
+
+        // Save
+        localStorage.setItem('petChase_coins', gameState.coins);
+        localStorage.setItem('petChase_consumables', JSON.stringify(gameState.consumables));
+
+        showNotify('🛒 Đã mua vật phẩm!');
+    } else {
+        showNotify('❌ Không đủ xu!');
+    }
+};
+
+// Use consumable during game
+window.useConsumable = function (itemId) {
+    if (!gameState.isPlaying || gameState.isPaused) return;
+    if (gameState.consumables[itemId] <= 0) return;
+    if (gameState.consumablesUsedThisRound[itemId]) return;
+
+    const now = Date.now();
+
+    // Deduct item
+    gameState.consumables[itemId]--;
+    gameState.consumablesUsedThisRound[itemId] = true;
+
+    // Apply effect
+    switch (itemId) {
+        case 'banana':
+            // Stun all pets for 1.25 seconds
+            gameState.effects.petStunned = true;
+            gameState.effects.petStunEnd = now + 1250;
+            showNotify('🍌 Pet bị choáng 1.25 giây!');
+            break;
+
+        case 'bucket':
+            // Slow pets by 40% for 5 seconds
+            gameState.effects.petSlowed = true;
+            gameState.effects.petSlowEnd = now + 5000;
+            gameState.effects.petSlowAmount = 0.4;
+            showNotify('🪣 Pet chậm 40% trong 5 giây!');
+            break;
+
+        case 'pepper':
+            // Easy catch for 5 seconds
+            gameState.effects.easyCatch = true;
+            gameState.effects.easyCatchEnd = now + 5000;
+            showNotify('🌶️ Dễ bắt hơn trong 5 giây!');
+            break;
+    }
+
+    // Update UI
+    updateConsumableUI();
+    updateConsumableBarUI();
+    localStorage.setItem('petChase_consumables', JSON.stringify(gameState.consumables));
+};
 
 document.addEventListener('DOMContentLoaded', () => {
     init();

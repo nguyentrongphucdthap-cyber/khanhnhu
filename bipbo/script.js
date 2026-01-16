@@ -41,6 +41,16 @@ const skins = [
     { id: 'skin2', src: 'img/skin2.png', name: 'Nhân vật 2' },
     { id: 'skin3', src: 'img/skin3.png', name: 'Nhân vật 3' }
 ];
+
+// Sound effects
+const sounds = {
+    coin: new Audio('sound/bark1.mp3'),
+    upgrade: new Audio('sound/bark2.mp3'),
+    catch: new Audio('sound/bark3.mp3')
+};
+// Set volume for sound effects
+Object.values(sounds).forEach(s => s.volume = 0.3);
+
 const keys = { up: false, down: false, left: false, right: false, sprint: false };
 let elements = {};
 
@@ -447,7 +457,7 @@ function gameLoop() {
         } else if (dist < evadeRadius) {
             const a = Math.atan2(dy, dx);
             let fleeSpeed = currentPetSpeed * (1 + (gameState.currentLevel * 0.04) * mobileMultiplier);
-            if (dashState.isDashing) fleeSpeed *= 2.5;
+            if (dashState.isDashing) fleeSpeed *= 1.6; // Reduced from 2.5
 
             // Check if trapped in a corner/edge
             const isNearEdge = px < marginL + 45 || px > window.innerWidth - marginR - 45 ||
@@ -476,8 +486,8 @@ function gameLoop() {
                 // Dash towards center instead of fleeing into the wall
                 const centerX = window.innerWidth / 2, centerY = window.innerHeight / 2;
                 const angleToCenter = Math.atan2(centerY - py, centerX - px);
-                px += Math.cos(angleToCenter) * fleeSpeed * 3.5;
-                py += Math.sin(angleToCenter) * fleeSpeed * 3.5;
+                px += Math.cos(angleToCenter) * fleeSpeed * 2.0; // Reduced from 3.5
+                py += Math.sin(angleToCenter) * fleeSpeed * 2.0; // Reduced from 3.5
                 dashState.isDashing = true;
                 dashState.dashEnd = now + 1500;
                 dashState.lastDash = now;
@@ -622,6 +632,11 @@ function createPaw(x, y) {
 function catchPet(i) {
     const pet = document.getElementById(`pet${i}`);
     if (!pet || pet.dataset.caught === 'true') return;
+
+    // Play catch sound
+    sounds.catch.currentTime = 0;
+    sounds.catch.play().catch(() => { });
+
     pet.dataset.caught = 'true';
     pet.querySelector('.status-badge').classList.add('caught');
     gameState.petsCaught++;
@@ -1035,6 +1050,10 @@ function spawnCoin(mL, mR, mT, mB) {
 }
 
 function collectCoin() {
+    // Play coin sound
+    sounds.coin.currentTime = 0;
+    sounds.coin.play().catch(() => { });
+
     // Ledger upgrade = x2 coins
     const coinAmount = gameState.upgrades.ledger ? 2 : 1;
     gameState.coins += coinAmount;
@@ -1095,6 +1114,11 @@ window.buyItem = function (itemId, price) {
 
         applyUpgrades();
         updateShopUI();
+
+        // Play upgrade sound
+        sounds.upgrade.currentTime = 0;
+        sounds.upgrade.play().catch(() => { });
+
         showNotify('🛒 Mua hàng thành công!');
     } else {
         showNotify('❌ Không đủ xu!');

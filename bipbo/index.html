@@ -69,44 +69,96 @@
     <div class="skin-modal" id="shopModal">
         <div class="skin-content shop-content">
             <h2 class="skin-title">🛒 Cửa Hàng Trang Bị</h2>
-            <div class="shop-grid">
-                <!-- Staff -->
-                <div class="shop-item" id="itemStaff">
-                    <div class="item-icon">🦯</div>
-                    <div class="item-info">
-                        <div class="item-name">Gậy Bắt Chó</div>
-                        <div class="item-desc">Tăng tầm bắt thú cưng thêm 20%</div>
+
+            <!-- Upgrades Section -->
+            <div class="shop-section">
+                <div class="shop-section-title">✨ Nâng Cấp Vĩnh Viễn</div>
+                <div class="shop-grid">
+                    <!-- Staff -->
+                    <div class="shop-item" id="itemStaff">
+                        <div class="item-icon">🦯</div>
+                        <div class="item-info">
+                            <div class="item-name">Gậy Bắt Chó</div>
+                            <div class="item-desc">Tăng tầm bắt thú cưng thêm 20%</div>
+                        </div>
+                        <button class="btn-buy" onclick="buyItem('staff', 50)">50 🪙</button>
                     </div>
-                    <button class="btn-buy" onclick="buyItem('staff', 50)">50 🪙</button>
-                </div>
-                <!-- Tranquilizer -->
-                <div class="shop-item" id="itemTranquilizer">
-                    <div class="item-icon">🧪</div>
-                    <div class="item-info">
-                        <div class="item-name">Thuốc Mê</div>
-                        <div class="item-desc">Tăng thời gian bắt giữ lên 60 giây</div>
+                    <!-- Tranquilizer -->
+                    <div class="shop-item" id="itemTranquilizer">
+                        <div class="item-icon">🧪</div>
+                        <div class="item-info">
+                            <div class="item-name">Thuốc Mê</div>
+                            <div class="item-desc">Tăng thời gian bắt giữ lên 60 giây</div>
+                        </div>
+                        <button class="btn-buy" onclick="buyItem('tranquilizer', 100)">100 🪙</button>
                     </div>
-                    <button class="btn-buy" onclick="buyItem('tranquilizer', 100)">100 🪙</button>
-                </div>
-                <!-- Speed -->
-                <div class="shop-item" id="itemSpeed">
-                    <div class="item-icon">👟</div>
-                    <div class="item-info">
-                        <div class="item-name">Thuốc Tăng Tốc</div>
-                        <div class="item-desc">Tăng 10% tốc độ chạy của nhân vật</div>
+                    <!-- Speed -->
+                    <div class="shop-item" id="itemSpeed">
+                        <div class="item-icon">👟</div>
+                        <div class="item-info">
+                            <div class="item-name">Thuốc Tăng Tốc</div>
+                            <div class="item-desc">Tăng 10% tốc độ chạy của nhân vật</div>
+                        </div>
+                        <button class="btn-buy" onclick="buyItem('speed', 80)">80 🪙</button>
                     </div>
-                    <button class="btn-buy" onclick="buyItem('speed', 80)">80 🪙</button>
-                </div>
-                <!-- Gloves -->
-                <div class="shop-item" id="itemGloves">
-                    <div class="item-icon">🧤</div>
-                    <div class="item-info">
-                        <div class="item-name">Găng Tay</div>
-                        <div class="item-desc">Tăng 30% tốc độ bắt (tiến trình)</div>
+                    <!-- Gloves -->
+                    <div class="shop-item" id="itemGloves">
+                        <div class="item-icon">🧤</div>
+                        <div class="item-info">
+                            <div class="item-name">Găng Tay</div>
+                            <div class="item-desc">Tăng 30% tốc độ bắt (tiến trình)</div>
+                        </div>
+                        <button class="btn-buy" onclick="buyItem('gloves', 120)">120 🪙</button>
                     </div>
-                    <button class="btn-buy" onclick="buyItem('gloves', 120)">120 🪙</button>
+                    <!-- Ledger (new) -->
+                    <div class="shop-item" id="itemLedger">
+                        <div class="item-icon">📒</div>
+                        <div class="item-info">
+                            <div class="item-name">Sổ Tính Tiền</div>
+                            <div class="item-desc">Nhặt xu được x2 (2 thay vì 1)</div>
+                        </div>
+                        <button class="btn-buy" onclick="buyItem('ledger', 150)">150 🪙</button>
+                    </div>
                 </div>
             </div>
+
+            <!-- Consumables Section -->
+            <div class="shop-section">
+                <div class="shop-section-title">🎯 Vật Phẩm Sử Dụng (1 lần/trận)</div>
+                <div class="shop-grid">
+                    <!-- Banana Peel -->
+                    <div class="shop-item consumable-item" id="itemBanana">
+                        <div class="item-icon">🍌</div>
+                        <div class="item-info">
+                            <div class="item-name">Cỏ Chuối</div>
+                            <div class="item-desc">Làm choáng pet trong 1.25 giây</div>
+                        </div>
+                        <div class="consumable-count" id="bananaCount">x0</div>
+                        <button class="btn-buy btn-buy-consumable" onclick="buyConsumable('banana', 15)">15 🪙</button>
+                    </div>
+                    <!-- Water Bucket -->
+                    <div class="shop-item consumable-item" id="itemBucket">
+                        <div class="item-icon">🪣</div>
+                        <div class="item-info">
+                            <div class="item-name">Xô Nước</div>
+                            <div class="item-desc">Làm chậm pet 40% trong 5 giây</div>
+                        </div>
+                        <div class="consumable-count" id="bucketCount">x0</div>
+                        <button class="btn-buy btn-buy-consumable" onclick="buyConsumable('bucket', 20)">20 🪙</button>
+                    </div>
+                    <!-- Pepper Spray -->
+                    <div class="shop-item consumable-item" id="itemPepper">
+                        <div class="item-icon">🌶️</div>
+                        <div class="item-info">
+                            <div class="item-name">Hơi Cay</div>
+                            <div class="item-desc">Pet dễ bắt hơn trong 5 giây</div>
+                        </div>
+                        <div class="consumable-count" id="pepperCount">x0</div>
+                        <button class="btn-buy btn-buy-consumable" onclick="buyConsumable('pepper', 25)">25 🪙</button>
+                    </div>
+                </div>
+            </div>
+
             <button class="btn-close" onclick="closeShop()">Đóng</button>
         </div>
     </div>
@@ -172,8 +224,8 @@
                 Giữ <b>Shift</b> để chạy nhanh • Đuổi kịp để bắt! 🐾
             </div>
             <div class="mobile-tutorial">
-                💡 Sử dụng bộ điều khiển để di chuyển<br>
-                Nút <b>Sấm sét</b> để chạy nhanh • Đuổi kịp để bắt! 🐾
+                💡 Kéo <b>Joystick</b> để di chuyển<br>
+                Nút <b>CHẠY</b> để tăng tốc • Đuổi kịp để bắt! 🐾
             </div>
         </div>
 
@@ -183,21 +235,12 @@
             <div class="catch-progress-bar" id="catchProgressBar"></div>
         </div>
 
-        <!-- Mobile Controls -->
+        <!-- Mobile Joystick Control -->
         <div class="mobile-controls" id="mobileControls">
-            <div class="control-pad">
-                <button class="control-btn up" id="btnUp">
-                    <div class="arrow"></div>
-                </button>
-                <button class="control-btn down" id="btnDown">
-                    <div class="arrow"></div>
-                </button>
-                <button class="control-btn left" id="btnLeft">
-                    <div class="arrow"></div>
-                </button>
-                <button class="control-btn right" id="btnRight">
-                    <div class="arrow"></div>
-                </button>
+            <div class="joystick-container" id="joystickContainer">
+                <div class="joystick-base" id="joystickBase">
+                    <div class="joystick-knob" id="joystickKnob"></div>
+                </div>
             </div>
         </div>
 
@@ -209,6 +252,22 @@
             </div>
             <span class="sprint-label">CHẠY</span>
         </button>
+
+        <!-- Consumable Items Bar -->
+        <div class="consumable-bar" id="consumableBar">
+            <button class="consumable-btn" id="useBanana" onclick="useConsumable('banana')" disabled>
+                <span class="consumable-emoji">🍌</span>
+                <span class="consumable-qty" id="bananaQty">0</span>
+            </button>
+            <button class="consumable-btn" id="useBucket" onclick="useConsumable('bucket')" disabled>
+                <span class="consumable-emoji">🪣</span>
+                <span class="consumable-qty" id="bucketQty">0</span>
+            </button>
+            <button class="consumable-btn" id="usePepper" onclick="useConsumable('pepper')" disabled>
+                <span class="consumable-emoji">🌶️</span>
+                <span class="consumable-qty" id="pepperQty">0</span>
+            </button>
+        </div>
     </div>
 
     <!-- ========== WIN SCREEN ========== -->

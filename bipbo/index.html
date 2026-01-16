@@ -122,43 +122,6 @@
                 </div>
             </div>
 
-            <!-- Consumables Section -->
-            <div class="shop-section">
-                <div class="shop-section-title">🎯 Vật Phẩm Sử Dụng (1 lần/trận)</div>
-                <div class="shop-grid">
-                    <!-- Banana Peel -->
-                    <div class="shop-item consumable-item" id="itemBanana">
-                        <div class="item-icon">🍌</div>
-                        <div class="item-info">
-                            <div class="item-name">Cỏ Chuối</div>
-                            <div class="item-desc">Làm choáng pet trong 1.25 giây</div>
-                        </div>
-                        <div class="consumable-count" id="bananaCount">x0</div>
-                        <button class="btn-buy btn-buy-consumable" onclick="buyConsumable('banana', 15)">15 🪙</button>
-                    </div>
-                    <!-- Water Bucket -->
-                    <div class="shop-item consumable-item" id="itemBucket">
-                        <div class="item-icon">🪣</div>
-                        <div class="item-info">
-                            <div class="item-name">Xô Nước</div>
-                            <div class="item-desc">Làm chậm pet 40% trong 5 giây</div>
-                        </div>
-                        <div class="consumable-count" id="bucketCount">x0</div>
-                        <button class="btn-buy btn-buy-consumable" onclick="buyConsumable('bucket', 20)">20 🪙</button>
-                    </div>
-                    <!-- Pepper Spray -->
-                    <div class="shop-item consumable-item" id="itemPepper">
-                        <div class="item-icon">🌶️</div>
-                        <div class="item-info">
-                            <div class="item-name">Hơi Cay</div>
-                            <div class="item-desc">Pet dễ bắt hơn trong 5 giây</div>
-                        </div>
-                        <div class="consumable-count" id="pepperCount">x0</div>
-                        <button class="btn-buy btn-buy-consumable" onclick="buyConsumable('pepper', 25)">25 🪙</button>
-                    </div>
-                </div>
-            </div>
-
             <button class="btn-close" onclick="closeShop()">Đóng</button>
         </div>
     </div>
@@ -252,22 +215,6 @@
             </div>
             <span class="sprint-label">CHẠY</span>
         </button>
-
-        <!-- Consumable Items Bar -->
-        <div class="consumable-bar" id="consumableBar">
-            <button class="consumable-btn" id="useBanana" onclick="useConsumable('banana')" disabled>
-                <span class="consumable-emoji">🍌</span>
-                <span class="consumable-qty" id="bananaQty">0</span>
-            </button>
-            <button class="consumable-btn" id="useBucket" onclick="useConsumable('bucket')" disabled>
-                <span class="consumable-emoji">🪣</span>
-                <span class="consumable-qty" id="bucketQty">0</span>
-            </button>
-            <button class="consumable-btn" id="usePepper" onclick="useConsumable('pepper')" disabled>
-                <span class="consumable-emoji">🌶️</span>
-                <span class="consumable-qty" id="pepperQty">0</span>
-            </button>
-        </div>
     </div>
 
     <!-- ========== WIN SCREEN ========== -->

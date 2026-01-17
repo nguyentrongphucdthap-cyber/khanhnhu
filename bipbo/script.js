@@ -8,7 +8,7 @@ const gameState = {
     currentLevel: 1,
     currentPets: [], petsCaught: 0, totalPetsNeeded: 1,
     playerX: 0, playerY: 0,
-    playerSpeed: 3.5, playerSprintSpeed: 5.5, petSpeed: 1.6,
+    playerSpeed: 2.45, playerSprintSpeed: 3.85, petSpeed: 1.12,
     catchDistance: 65, catchProgress: 0, catchRequired: 300,
     selectedSkin: 'skin1', timer: 0, timerInterval: null,
     stamina: 100, maxStamina: 100, staminaDrain: 1.5, staminaRegen: 0.8, isSprinting: false,
@@ -457,7 +457,7 @@ function gameLoop() {
         } else if (dist < evadeRadius) {
             const a = Math.atan2(dy, dx);
             let fleeSpeed = currentPetSpeed * (1 + (gameState.currentLevel * 0.04) * mobileMultiplier);
-            if (dashState.isDashing) fleeSpeed *= 1.6; // Reduced from 2.5
+            if (dashState.isDashing) fleeSpeed *= 1.12; // Reduced by 30% (was 1.6)
 
             // Check if trapped in a corner/edge
             const isNearEdge = px < marginL + 45 || px > window.innerWidth - marginR - 45 ||
@@ -486,8 +486,8 @@ function gameLoop() {
                 // Dash towards center instead of fleeing into the wall
                 const centerX = window.innerWidth / 2, centerY = window.innerHeight / 2;
                 const angleToCenter = Math.atan2(centerY - py, centerX - px);
-                px += Math.cos(angleToCenter) * fleeSpeed * 2.0; // Reduced from 3.5
-                py += Math.sin(angleToCenter) * fleeSpeed * 2.0; // Reduced from 3.5
+                px += Math.cos(angleToCenter) * fleeSpeed * 1.4; // Reduced by 30% (was 2.0)
+                py += Math.sin(angleToCenter) * fleeSpeed * 1.4; // Reduced by 30% (was 2.0)
                 dashState.isDashing = true;
                 dashState.dashEnd = now + 1500;
                 dashState.lastDash = now;
@@ -930,8 +930,8 @@ function setupControls() {
             // Move knob
             joystickKnob.style.transform = `translate(${dx}px, ${dy}px)`;
 
-            // Calculate direction (with dead zone of 15%)
-            const deadZone = maxDistance * 0.15;
+            // Calculate direction (with dead zone of 55% - reduced sensitivity by 40%)
+            const deadZone = maxDistance * 0.55;
             const normalizedX = dx / maxDistance;
             const normalizedY = dy / maxDistance;
 

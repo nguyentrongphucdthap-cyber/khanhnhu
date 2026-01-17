@@ -82,16 +82,39 @@ function incrementGamesPlayed() {
     localStorage.setItem(STORAGE_KEYS.GAMES_PLAYED, gamesPlayed);
 }
 
-// Update highscore (called from individual games)
+// --- PHẦN ĐÃ SỬA: Update highscore & Cộng tiền vào ví ---
 function updateHighscore(game, score) {
+    // 1. Xử lý lưu Kỷ lục (Highscore)
     const key = STORAGE_KEYS[`${game.toUpperCase()}_HIGHSCORE`];
     const currentHighscore = parseInt(localStorage.getItem(key) || 0);
+    let isNewHighscore = false;
 
     if (score > currentHighscore) {
         localStorage.setItem(key, score);
-        return true; // New highscore!
+        isNewHighscore = true;
     }
-    return false;
+
+    // 2. Xử lý Cộng điểm vào Ví (Wallet) để quay Gacha
+    // Lấy số điểm hiện có trong ví
+    const currentWallet = parseInt(localStorage.getItem(STORAGE_KEYS.WALLET) || 0);
+    // Cộng thêm điểm của màn chơi vừa xong
+    const newWallet = currentWallet + score;
+    // Lưu lại vào bộ nhớ
+    localStorage.setItem(STORAGE_KEYS.WALLET, newWallet);
+
+    // 3. Cập nhật hiển thị số điểm ngay lập tức trên giao diện
+    const totalEl = document.getElementById('total-highscore');
+    if (totalEl) {
+        totalEl.textContent = formatNumber(newWallet);
+    }
+    
+    // Cập nhật cả trong modal Gacha nếu đang mở
+    const gachaEl = document.getElementById('user-points-display');
+    if (gachaEl) {
+        gachaEl.textContent = formatNumber(newWallet);
+    }
+
+    return isNewHighscore;
 }
 
 // Export for use in games

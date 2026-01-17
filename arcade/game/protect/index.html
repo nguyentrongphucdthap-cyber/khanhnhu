@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>🛡️ Bảo Vệ Khánh Như - Arena</title>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <header class="game-header">
+        <a href="../../index.html" class="back-btn">← Về</a>
+        <h1 class="game-title">🛡️ Bảo Vệ</h1>
+        <div class="score-display">
+            <div class="score-item">
+                <span class="score-label">Điểm</span>
+                <span class="score-value" id="score">0</span>
+            </div>
+            <div class="score-item gold-item">
+                <span class="score-label">💰</span>
+                <span class="score-value" id="gold">0</span>
+            </div>
+            <div class="score-item">
+                <span class="score-label">Lv</span>
+                <span class="score-value" id="level">1</span>
+            </div>
+            <div class="score-item">
+                <span class="score-label">⏱️</span>
+                <span class="score-value" id="timer">0:00</span>
+            </div>
+        </div>
+    </header>
+
+    <div class="game-container">
+        <canvas id="game-canvas"></canvas>
+
+        <!-- XP Bar -->
+        <div class="xp-bar-container" id="xp-container">
+            <div class="xp-bar" id="xp-bar"></div>
+            <span class="xp-text" id="xp-text">0 / 50 XP</span>
+        </div>
+
+        <!-- Shop Button -->
+        <button class="shop-toggle-btn" id="shop-btn">🛒</button>
+
+        <!-- KN Health Bar -->
+        <div class="kn-health-container" id="kn-health-container">
+            <span class="kn-label">💖 Khánh Như</span>
+            <div class="kn-health-bar">
+                <div class="kn-health-fill" id="kn-health"></div>
+            </div>
+        </div>
+
+        <!-- Start Overlay -->
+        <div class="game-overlay" id="start-overlay">
+            <div class="overlay-icon">🛡️</div>
+            <div class="overlay-title">Bảo Vệ Khánh Như</div>
+            <div class="overlay-subtitle">Di chuyển và bắn hạ quái vật!</div>
+            <div class="game-features">
+                <p>🎯 Nhấn nút 🎯 để bắn (tự động nhắm)</p>
+                <p>💰 Bắn quái để nhận vàng & mua đặc vụ</p>
+                <p>⬆️ Nâng cấp 6 lần → TỐI THƯỢNG!</p>
+                <p>👹 Boss mỗi 2-5 phút</p>
+            </div>
+            <button class="start-btn" id="start-btn">🎮 Bắt đầu</button>
+        </div>
+
+        <!-- Shop Panel -->
+        <div class="shop-panel hidden" id="shop-panel">
+            <div class="shop-header">
+                <h2>🛒 Cửa Hàng Đặc Vụ</h2>
+                <button class="close-shop" id="close-shop">✕</button>
+            </div>
+            <div class="shop-info">
+                <span>Đặc vụ: <strong id="agent-count">0/3</strong></span>
+            </div>
+            <div class="agent-list" id="agent-list">
+                <!-- Dynamically filled -->
+            </div>
+        </div>
+
+        <!-- Level Up Overlay -->
+        <div class="game-overlay hidden" id="levelup-overlay">
+            <div class="overlay-icon">⬆️</div>
+            <div class="overlay-title">LEVEL UP!</div>
+            <div class="overlay-subtitle">Chọn một nâng cấp:</div>
+            <div class="upgrade-options" id="upgrade-options">
+                <!-- Dynamically filled -->
+            </div>
+        </div>
+
+        <!-- Game Over Overlay -->
+        <div class="game-overlay hidden" id="gameover-overlay">
+            <div class="overlay-icon">💔</div>
+            <div class="overlay-title">Khánh Như đã thất thủ!</div>
+            <div class="overlay-score" id="final-score">Điểm: 0</div>
+            <div class="overlay-stats" id="final-stats">Thời gian: 0:00 | Cấp: 1</div>
+            <div id="highscore-message"></div>
+            <button class="start-btn" id="restart-btn">🔄 Thử lại</button>
+        </div>
+    </div>
+
+    <!-- Mobile Joystick -->
+    <div class="joystick-container" id="joystick-container">
+        <div class="joystick-base" id="joystick-base">
+            <div class="joystick-stick" id="joystick-stick"></div>
+        </div>
+    </div>
+
+    <!-- Fire Button -->
+    <div class="fire-btn-container">
+        <button class="fire-btn" id="fire-btn">🎯</button>
+    </div>
+
+    <script src="../../sound-manager.js"></script>
+    <script src="game.js"></script>
+</body>
+
+</html>

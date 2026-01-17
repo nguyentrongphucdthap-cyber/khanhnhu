@@ -7,11 +7,11 @@ const CONFIG = {
     GAME_DURATION: 45,
     HOLES_COUNT: 9,
 
-    // Mole timing (adjusts with difficulty)
-    INITIAL_UP_TIME: 1200,
-    MIN_UP_TIME: 500,
-    INITIAL_SPAWN_DELAY: 800,
-    MIN_SPAWN_DELAY: 300
+    // Mole timing (Slower and easier)
+    INITIAL_UP_TIME: 1500,  // Was 1200
+    MIN_UP_TIME: 800,       // Was 500
+    INITIAL_SPAWN_DELAY: 1000, // Was 800
+    MIN_SPAWN_DELAY: 600      // Was 300
 };
 
 const MOLE_TYPES = [
@@ -21,7 +21,31 @@ const MOLE_TYPES = [
     { type: 'bomb', emoji: '💣', points: -20, weight: 15, isBad: true } // Changed from Hedgehog to Bomb
 ];
 
-// ... (giữ nguyên các biến global)
+let gameRunning = false;
+let score = 0;
+let highScore = 0;
+let timeLeft = CONFIG.GAME_DURATION;
+let combo = 0;
+let maxCombo = 0;
+
+let holes = [];
+let moles = [];
+let gameTimer = null;
+let spawnTimeout = null;
+
+function init() {
+    highScore = parseInt(localStorage.getItem('arcade_whack_highscore') || 0);
+    const hsEl = document.getElementById('high-score');
+    if (hsEl) hsEl.textContent = highScore;
+
+    createBoard();
+
+    const startBtn = document.getElementById('start-btn');
+    const restartBtn = document.getElementById('restart-btn');
+
+    if (startBtn) startBtn.addEventListener('click', startGame);
+    if (restartBtn) restartBtn.addEventListener('click', startGame);
+}
 
 function createBoard() {
     const board = document.getElementById('game-board');
@@ -55,12 +79,113 @@ function createBoard() {
             isUp: false,
             type: null,
             canHit: true,
-            hideTimeout: null
+            canHit: true,
+            hideTimeout: null,
+            tauntTimeout: null
         });
     }
 }
 
-// ... (giữ nguyên startGame, gameOver, getDifficulty, scheduleNextMole)
+function startGame() {
+    const overlay = document.getElementById('start-overlay');
+    const goOverlay = document.getElementById('gameover-overlay');
+
+    if (overlay) overlay.classList.add('hidden');
+    if (goOverlay) goOverlay.classList.add('hidden');
+
+    // Reset state
+    createBoard();
+    score = 0;
+    timeLeft = CONFIG.GAME_DURATION;
+    combo = 0;
+    maxCombo = 0;
+
+    document.getElementById('current-score').textContent = '0';
+    document.getElementById('timer').textContent = timeLeft;
+    document.getElementById('timer').style.color = '';
+
+    // Start BGM
+    SoundManager.playBGM('yA41iunMG6A');
+
+    gameRunning = true;
+
+    // Start timer
+    if (gameTimer) clearInterval(gameTimer);
+    gameTimer = setInterval(() => {
+        timeLeft--;
+        document.getElementById('timer').textContent = timeLeft;
+
+        if (timeLeft <= 10) {
+            document.getElementById('timer').style.color = '#ef4444';
+        }
+
+        if (timeLeft <= 0) {
+            SoundManager.playGameOver();
+            gameOver();
+        }
+    }, 1000);
+
+    // Start spawning
+    scheduleNextMole();
+}
+
+function gameOver() {
+    gameRunning = false;
+    SoundManager.stopBGM();
+
+    clearInterval(gameTimer);
+    clearTimeout(spawnTimeout);
+
+    // Hide all moles
+    moles.forEach((mole, i) => {
+        clearTimeout(mole.hideTimeout);
+        hideMole(i);
+    });
+
+    // Check highscore
+    let isNewHighscore = false;
+    if (score > highScore) {
+        highScore = score;
+        localStorage.setItem('arcade_whack_highscore', highScore);
+        document.getElementById('high-score').textContent = highScore;
+        isNewHighscore = true;
+    }
+
+    document.getElementById('final-score').textContent = 'Điểm: ' + score;
+    const msg = document.getElementById('highscore-message');
+    msg.innerHTML = isNewHighscore
+        ? '<span class="new-highscore">🎉 Kỷ lục mới!</span>'
+        : 'Kỷ lục: ' + highScore;
+    document.getElementById('gameover-overlay').classList.remove('hidden');
+}
+
+function getDifficulty() {
+    const elapsed = CONFIG.GAME_DURATION - timeLeft;
+    return 1 + elapsed / CONFIG.GAME_DURATION;
+}
+
+function scheduleNextMole() {
+    if (!gameRunning) return;
+
+    // Linear interpolation for smooth speed increase
+    // Tốc độ tăng đều từ INITIAL_SPAWN_DELAY xuống MIN_SPAWN_DELAY
+    const progress = (CONFIG.GAME_DURATION - timeLeft) / CONFIG.GAME_DURATION;
+    const currentDelay = CONFIG.INITIAL_SPAWN_DELAY - (progress * (CONFIG.INITIAL_SPAWN_DELAY - CONFIG.MIN_SPAWN_DELAY));
+
+    // Randomize slightly but keep close to the curve
+    const delay = Math.max(CONFIG.MIN_SPAWN_DELAY, currentDelay);
+
+    spawnTimeout = setTimeout(() => {
+        popUpMole();
+
+        // 5% chance Double Spawn
+        if (Math.random() < 0.05 && timeLeft > 5) {
+            setTimeout(() => popUpMole(), 150);
+        }
+
+        scheduleNextMole();
+    }, delay);
+}
 
 function popUpMole() {
     if (!gameRunning) return;
@@ -121,11 +246,16 @@ function popUpMole() {
 
 
     // Schedule hide
-    const difficulty = getDifficulty();
-    const upTime = Math.max(
-        CONFIG.MIN_UP_TIME,
-        CONFIG.INITIAL_UP_TIME - (difficulty - 1) * 300
-    );
+    const progress = (CONFIG.GAME_DURATION - timeLeft) / CONFIG.GAME_DURATION;
+    const currentUpTime = CONFIG.INITIAL_UP_TIME - (progress * (CONFIG.INITIAL_UP_TIME - CONFIG.MIN_UP_TIME));
+    const upTime = Math.max(CONFIG.MIN_UP_TIME, currentUpTime);
+
+    // Taunt mechanism: Shake harder after 50% of up time
+    mole.tauntTimeout = setTimeout(() => {
+        if (mole.isUp && mole.canHit) {
+            mole.element.classList.add('taunt');
+        }
+    }, upTime * 0.4);
 
     mole.hideTimeout = setTimeout(() => {
         if (mole.isUp && mole.canHit) {
@@ -133,14 +263,15 @@ function popUpMole() {
             combo = 0;
         }
         hideMole(holeIndex);
-    }, upTime + Math.random() * 200);
+    }, upTime);
 }
 
 function hideMole(index) {
     const mole = moles[index];
-    mole.element.classList.remove('up', 'hit', 'golden');
+    mole.element.classList.remove('up', 'hit', 'golden', 'taunt');
     mole.isUp = false;
     mole.type = null;
+    clearTimeout(mole.tauntTimeout);
 }
 
 function whackMole(index) {
@@ -150,11 +281,16 @@ function whackMole(index) {
 
     mole.canHit = false;
     clearTimeout(mole.hideTimeout);
+    clearTimeout(mole.tauntTimeout);
+    mole.element.classList.remove('taunt');
+
+    // Determine Critical Hit (15% chance)
+    const isCritical = Math.random() < 0.15;
 
     // Visual Effects
     const rect = holes[index].getBoundingClientRect();
-    createHammerEffect(rect.left + rect.width / 2, rect.top + rect.height / 2);
-    shakeScreen();
+    createHammerEffect(rect.left + rect.width / 2, rect.top + rect.height / 2, isCritical);
+    shakeScreen(isCritical);
 
     // Add hit animation
     mole.element.classList.add('hit');
@@ -164,7 +300,9 @@ function whackMole(index) {
 
     if (!mole.type.isBad) {
         // Good hit - increase combo
-        SoundManager.playHit();
+        if (isCritical) SoundManager.playCriticalHit();
+        else SoundManager.playHit();
+
         SoundManager.playCollect();
         combo++;
         maxCombo = Math.max(maxCombo, combo);
@@ -204,20 +342,23 @@ function showScorePopup(hole, points) {
 }
 
 // Visual Effects Functions
-function createHammerEffect(x, y) {
+function createHammerEffect(x, y, isBig = false) {
     const hammer = document.createElement('div');
     hammer.className = 'hammer-visual';
-    hammer.style.left = (x - 20) + 'px'; // Offset slightly
-    hammer.style.top = (y - 40) + 'px';
+    hammer.style.left = (x - (isBig ? 45 : 30)) + 'px'; // Center offset adjustments
+    hammer.style.top = (y - (isBig ? 60 : 40)) + 'px';
+
+    if (isBig) hammer.style.transform = 'scale(1.5)';
+
     document.body.appendChild(hammer);
     setTimeout(() => hammer.remove(), 300);
 }
 
-function shakeScreen() {
+function shakeScreen(isHard = false) {
     const container = document.querySelector('.game-container'); // Shake container/board
-    container.classList.remove('shaking'); // Reset
+    container.classList.remove('shaking', 'shaking-hard'); // Reset
     void container.offsetWidth; // Force reflow
-    container.classList.add('shaking');
+    container.classList.add(isHard ? 'shaking-hard' : 'shaking');
 }
 
 // Start

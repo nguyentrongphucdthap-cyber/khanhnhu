@@ -1,0 +1,322 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+}
+
+html,
+body {
+    height: 100%;
+    overflow: hidden;
+    touch-action: manipulation;
+}
+
+body {
+    font-family: 'Nunito', -apple-system, sans-serif;
+    background: linear-gradient(180deg, #ecfdf5 0%, #d1fae5 100%);
+    height: 100vh;
+    overflow: hidden;
+    position: relative;
+    color: #1e293b;
+    display: block;
+    /* Change from flex to block to allow absolute positioning context */
+}
+
+.game-header {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    background: linear-gradient(to bottom, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.6) 100%);
+    backdrop-filter: blur(2px);
+    z-index: 20;
+    box-shadow: none;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.back-btn {
+    padding: 8px 14px;
+    background: rgba(255, 255, 255, 0.8);
+    border-radius: 20px;
+    color: #475569;
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 0.85rem;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.game-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #22c55e;
+}
+
+.score-display {
+    display: flex;
+    gap: 16px;
+}
+
+.score-item {
+    text-align: center;
+}
+
+.score-label {
+    font-size: 0.65rem;
+    color: #64748b;
+    display: block;
+}
+
+.score-value {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #22c55e;
+}
+
+.game-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+}
+
+#game-canvas {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.game-overlay {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 90%;
+    max-width: 400px;
+    height: auto;
+    z-index: 30;
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 24px;
+    padding: 30px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+}
+
+.game-overlay.hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.overlay-icon {
+    font-size: 3.5rem;
+    margin-bottom: 8px;
+}
+
+.overlay-title {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: #22c55e;
+    margin-bottom: 4px;
+}
+
+.overlay-subtitle {
+    color: #64748b;
+    margin-bottom: 16px;
+    font-size: 0.9rem;
+    text-align: center;
+}
+
+.overlay-score {
+    font-size: 1.2rem;
+    color: #22c55e;
+    font-weight: 700;
+    margin-bottom: 4px;
+}
+
+.start-btn {
+    padding: 14px 40px;
+    font-size: 1.1rem;
+    font-weight: 700;
+    font-family: inherit;
+    background: linear-gradient(135deg, #22c55e, #16a34a);
+    color: white;
+    border: none;
+    border-radius: 50px;
+    cursor: pointer;
+    box-shadow: 0 4px 16px rgba(34, 197, 94, 0.35);
+    -webkit-tap-highlight-color: transparent;
+}
+
+.start-btn:active {
+    transform: scale(0.96);
+}
+
+/* Touch Controls - Optimized for Mobile */
+.touch-controls {
+    position: absolute;
+    bottom: 20px;
+    left: 0;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+    /* Wider gap for easier pressing */
+    padding: 16px;
+    z-index: 20;
+    pointer-events: none;
+    /* Container passes clicks */
+}
+
+.touch-btn {
+    pointer-events: auto;
+    /* Buttons capture clicks */
+    background: rgba(255, 255, 255, 0.6);
+    backdrop-filter: blur(4px);
+    border: 2px solid rgba(255, 255, 255, 0.8);
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    transition: transform 0.1s;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+}
+
+.touch-btn span {
+    font-size: 2rem;
+    filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.2));
+}
+
+.touch-btn small {
+    display: none;
+    /* Hide text for cleaner look */
+}
+
+.jump-btn {
+    background: rgba(34, 197, 94, 0.85);
+    /* Green tint */
+    color: white;
+    border: none;
+}
+
+.duck-btn {
+    background: rgba(249, 115, 22, 0.85);
+    /* Orange tint */
+    color: white;
+    border: none;
+}
+
+.touch-btn:active {
+    transform: scale(0.9);
+}
+
+.touch-btn.pressed {
+    transform: scale(0.85);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Instructions - Hide or move */
+.instructions {
+    position: absolute;
+    bottom: 120px;
+    /* Above controls */
+    width: 100%;
+    text-align: center;
+    z-index: 10;
+    pointer-events: none;
+    opacity: 0.7;
+    display: none;
+    /* Hide by default to clear screen, show only on start if needed */
+}
+
+.instructions-card {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 12px 16px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.instructions h3 {
+    color: #22c55e;
+    margin-bottom: 6px;
+    font-size: 0.9rem;
+}
+
+.instructions p {
+    color: #64748b;
+    font-size: 0.8rem;
+    margin-bottom: 2px;
+}
+
+.instructions strong {
+    color: #22c55e;
+}
+
+.new-highscore {
+    color: #f97316;
+    font-weight: 700;
+}
+
+/* Landscape mode optimization */
+@media (orientation: landscape) and (max-height: 500px) {
+    .game-header {
+        padding: 8px 16px;
+    }
+
+    .game-title {
+        font-size: 1rem;
+    }
+
+    .touch-controls {
+        padding: 8px;
+        gap: 16px;
+    }
+
+    .touch-btn {
+        width: 70px;
+        height: 70px;
+    }
+
+    .touch-btn span {
+        font-size: 1.5rem;
+    }
+
+    .instructions {
+        display: none;
+    }
+
+    #game-canvas {
+        max-height: none;
+    }
+}
+
+/* Desktop - hide touch controls */
+@media (min-width: 768px) and (hover: hover) {
+    .touch-controls {
+        display: none;
+    }
+
+    .instructions {
+        max-width: 800px;
+        margin: 0 auto;
+    }
+
+    #game-canvas {
+        max-height: 320px;
+        cursor: pointer;
+    }
+}

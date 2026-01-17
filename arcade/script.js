@@ -6,11 +6,24 @@ const STORAGE_KEYS = {
     CATCH_HIGHSCORE: 'arcade_catch_highscore',
     WHACK_HIGHSCORE: 'arcade_whack_highscore',
     PROTECT_HIGHSCORE: 'arcade_protect_highscore',
-    GAMES_PLAYED: 'arcade_games_played'
+    GAMES_PLAYED: 'arcade_games_played',
+    WALLET: 'arcade_wallet_points'
 };
 
 // Initialize arcade
 document.addEventListener('DOMContentLoaded', () => {
+    // Migrate Logic: If wallet doesn't exist, create it from legacy formula
+    if (localStorage.getItem(STORAGE_KEYS.WALLET) === null) {
+        const dino = parseInt(localStorage.getItem(STORAGE_KEYS.DINO_HIGHSCORE) || 0);
+        const catchG = parseInt(localStorage.getItem(STORAGE_KEYS.CATCH_HIGHSCORE) || 0);
+        const whack = parseInt(localStorage.getItem(STORAGE_KEYS.WHACK_HIGHSCORE) || 0);
+        const protect = parseInt(localStorage.getItem(STORAGE_KEYS.PROTECT_HIGHSCORE) || 0);
+        const spent = parseInt(localStorage.getItem('arcade_spent_points') || 0);
+
+        const initialWallet = Math.max(0, (dino + catchG + whack + protect) - spent);
+        localStorage.setItem(STORAGE_KEYS.WALLET, initialWallet);
+    }
+
     loadHighscores();
     loadStats();
     setupCardInteractions();
@@ -28,9 +41,9 @@ function loadHighscores() {
     document.getElementById('whack-highscore').textContent = formatNumber(whackScore);
     document.getElementById('protect-highscore').textContent = formatNumber(protectScore);
 
-    // Calculate total highscore
-    const total = parseInt(dinoScore) + parseInt(catchScore) + parseInt(whackScore) + parseInt(protectScore);
-    document.getElementById('total-highscore').textContent = formatNumber(total);
+    // Display Wallet Points in Header (was Total Highscore)
+    const wallet = parseInt(localStorage.getItem(STORAGE_KEYS.WALLET) || 0);
+    document.getElementById('total-highscore').textContent = formatNumber(wallet);
 }
 
 // Load games played stats
@@ -88,7 +101,7 @@ window.ArcadeHelper = {
     STORAGE_KEYS
 };
 
-/* --- GACHA SYSTEM LOGIC (UPDATED) --- */
+/* --- GACHA SYSTEM LOGIC (UPDATED WITH WALLET SYSTEM) --- */
 const GACHA_ITEMS = [
     { id: '1', img: 'games/catch/img/1.png', name: 'Bút Gel Xanh', prob: 0.01 }, // 1%
     { id: '1b', img: 'games/catch/img/1.png', name: 'Bút Gel Đỏ', prob: 0.01 },
@@ -106,9 +119,9 @@ function openGacha(e) {
         e.stopPropagation();
     }
 
-    // Update points
-    const total = getTotalPoints();
-    document.getElementById('user-points-display').textContent = formatNumber(total);
+    // Update points display
+    const currentWallet = getTotalPoints();
+    document.getElementById('user-points-display').textContent = formatNumber(currentWallet);
 
     // Render Collection
     renderCollection();
@@ -125,32 +138,30 @@ function openGacha(e) {
 
 function closeGacha() {
     document.getElementById('gacha-modal').classList.add('hidden');
+    // Refresh main display too just in case
+    loadHighscores();
 }
 
 function getTotalPoints() {
-    const dino = parseInt(localStorage.getItem(STORAGE_KEYS.DINO_HIGHSCORE) || 0);
-    const catchG = parseInt(localStorage.getItem(STORAGE_KEYS.CATCH_HIGHSCORE) || 0);
-    const whack = parseInt(localStorage.getItem(STORAGE_KEYS.WHACK_HIGHSCORE) || 0);
-    const protect = parseInt(localStorage.getItem(STORAGE_KEYS.PROTECT_HIGHSCORE) || 0);
-
-    const spent = parseInt(localStorage.getItem('arcade_spent_points') || 0);
-
-    return Math.max(0, (dino + catchG + whack + protect) - spent);
+    return parseInt(localStorage.getItem(STORAGE_KEYS.WALLET) || 0);
 }
 
 function spinGacha(count = 1) {
     const cost = GACHA_COST * count;
-    const points = getTotalPoints();
+    const currentWallet = getTotalPoints();
 
-    if (points < cost) {
-        alert(`Bạn không đủ điểm! Cần ${formatNumber(cost)} điểm để quay ${count} lần.\nHãy chơi game để kiếm thêm điểm nhé!`);
+    if (currentWallet < cost) {
+        alert(`Bạn không đủ điểm! Cần ${formatNumber(cost)} điểm để quay ${count} lần.\nHãy chơi game để kiếm thêm điểm tích lũy nhé!`);
         return;
     }
 
-    // Deduct points
-    const currentSpent = parseInt(localStorage.getItem('arcade_spent_points') || 0);
-    localStorage.setItem('arcade_spent_points', currentSpent + cost);
-    document.getElementById('user-points-display').textContent = formatNumber(getTotalPoints());
+    // Deduct points directly
+    const newWallet = currentWallet - cost;
+    localStorage.setItem(STORAGE_KEYS.WALLET, newWallet);
+
+    // Update UI
+    document.getElementById('user-points-display').textContent = formatNumber(newWallet);
+    document.getElementById('total-highscore').textContent = formatNumber(newWallet);
 
     // Disable buttons
     const btns = document.querySelectorAll('.spin-btn');
@@ -172,7 +183,7 @@ function spinGacha(count = 1) {
     document.getElementById('gacha-result-container').classList.add('hidden');
 
     setTimeout(() => {
-        // Result
+        // Result logic
         box.style.animation = '';
         box.classList.add('hidden');
 
@@ -238,7 +249,7 @@ function displaySingleResult(result) {
     if (result.type === 'miss') {
         img.src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y="50" font-size="50">💨</text></svg>';
         name.textContent = "Chúc may mắn lần sau!";
-        note.textContent = "Đừng buồn, thử lại nhé!";
+        note.textContent = "Trượt rồi hihi!";
     } else if (result.type === 'duplicate') {
         img.src = result.item.img;
         name.textContent = result.item.name;

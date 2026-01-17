@@ -195,9 +195,23 @@ function loadImages() {
 // INITIALIZATION
 // ============================================
 
+// Cache DOM elements
+let uiElements = {};
+
 function init() {
     canvas = document.getElementById('game-canvas');
     ctx = canvas.getContext('2d');
+
+    // Cache UI for performance
+    uiElements = {
+        score: document.getElementById('score'),
+        level: document.getElementById('level'),
+        timer: document.getElementById('timer'),
+        gold: document.getElementById('gold'),
+        xpBar: document.getElementById('xp-bar'),
+        xpText: document.getElementById('xp-text'),
+        knHealth: document.getElementById('kn-health')
+    };
 
     // Load images first
     loadImages();
@@ -446,11 +460,17 @@ function startGame() {
 
     gameRunning = true;
     gamePaused = false;
+    SoundManager.playBGM('ZMuP01GlQi4');
     requestAnimationFrame(gameLoop);
 }
 
 function gameOver() {
     gameRunning = false;
+    SoundManager.stopBGM();
+
+    // Add score to Wallet
+    const currentWallet = parseInt(localStorage.getItem('arcade_wallet_points') || 0);
+    localStorage.setItem('arcade_wallet_points', currentWallet + stats.score);
 
     const highScore = parseInt(localStorage.getItem('arcade_protect_highscore') || 0);
     const isNewHighscore = stats.score > highScore;
@@ -460,6 +480,7 @@ function gameOver() {
     }
 
     document.getElementById('final-score').textContent = 'Điểm: ' + stats.score;
+    document.getElementById('final-xp').textContent = Math.floor(stats.xp);
     document.getElementById('final-stats').textContent =
         `Thời gian: ${formatTime(stats.gameTime)} | Cấp: ${stats.level} | Vàng: ${stats.gold}`;
     document.getElementById('highscore-message').innerHTML = isNewHighscore
@@ -599,17 +620,19 @@ function formatTime(seconds) {
 }
 
 function updateUI() {
-    document.getElementById('score').textContent = stats.score;
-    document.getElementById('level').textContent = stats.level;
-    document.getElementById('timer').textContent = formatTime(stats.gameTime);
-    document.getElementById('gold').textContent = stats.gold;
+    if (!uiElements.score) return;
+
+    uiElements.score.textContent = stats.score;
+    uiElements.level.textContent = stats.level;
+    uiElements.timer.textContent = formatTime(stats.gameTime);
+    uiElements.gold.textContent = stats.gold;
 
     const xpPercent = (stats.xp / stats.xpNeeded) * 100;
-    document.getElementById('xp-bar').style.width = xpPercent + '%';
-    document.getElementById('xp-text').textContent = `${stats.xp} / ${stats.xpNeeded} XP`;
+    uiElements.xpBar.style.width = xpPercent + '%';
+    uiElements.xpText.textContent = `${stats.xp} / ${stats.xpNeeded} XP`;
 
     const healthPercent = (stats.knHealth / stats.knMaxHealth) * 100;
-    document.getElementById('kn-health').style.width = healthPercent + '%';
+    uiElements.knHealth.style.width = healthPercent + '%';
 }
 
 // ============================================
@@ -739,7 +762,12 @@ function fireAtNearestEnemy(shooter, currentTime, isPlayer) {
     }
 
     if (isPlayer) {
-        SoundManager.playShoot();
+        // Throttle sound to prevent mobile lag
+        const now = performance.now();
+        if (!window.lastShootSoundTime || now - window.lastShootSoundTime > 80) {
+            SoundManager.playShoot();
+            window.lastShootSoundTime = now;
+        }
     }
 }
 

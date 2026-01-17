@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>🎁 Hứng Quà - Arcade</title>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <header class="game-header">
+        <a href="../../index.html" class="back-btn">← Về</a>
+        <h1 class="game-title">🎁 Hứng Quà</h1>
+        <div class="score-display">
+            <div class="score-item">
+                <span class="score-label">Điểm</span>
+                <span class="score-value" id="current-score">0</span>
+            </div>
+            <div class="score-item">
+                <span class="score-label">❤️</span>
+                <span class="score-value" id="lives">3</span>
+            </div>
+            <div class="score-item">
+                <span class="score-label">Kỷ lục</span>
+                <span class="score-value" id="high-score">0</span>
+            </div>
+        </div>
+    </header>
+
+    <div class="game-container">
+        <canvas id="game-canvas"></canvas>
+
+        <div class="game-overlay" id="start-overlay">
+            <div class="overlay-icon">🎁</div>
+            <div class="overlay-title">Hứng Quà Tặng</div>
+            <div class="overlay-subtitle">Kéo giỏ để hứng quà, tránh 💣!</div>
+            <button class="start-btn" id="start-btn">🎮 Bắt đầu</button>
+        </div>
+
+        <div class="game-overlay hidden" id="gameover-overlay">
+            <div class="overlay-icon">💔</div>
+            <div class="overlay-title">Game Over!</div>
+            <div class="overlay-score" id="final-score">Điểm: 0</div>
+            <div id="highscore-message"></div>
+            <button class="start-btn" id="restart-btn">🔄 Chơi lại</button>
+        </div>
+    </div>
+
+    <div class="instructions">
+        <div class="instructions-card">
+            <h3>📖 Cách chơi</h3>
+            <p>• Kéo/chạm màn hình để di chuyển giỏ</p>
+            <p>• 🎁 +10đ • ⭐ +25đ • 💎 +50đ • 💣 -1❤️</p>
+        </div>
+    </div>
+
+    <script src="game.js"></script>
+</body>
+
+</html>

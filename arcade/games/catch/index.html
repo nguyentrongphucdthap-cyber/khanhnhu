@@ -46,6 +46,20 @@
             <div id="highscore-message"></div>
             <button class="start-btn" id="restart-btn">🔄 Chơi lại</button>
         </div>
+
+        <div class="reward-overlay hidden" id="reward-overlay">
+            <div class="reward-card">
+                <div class="reward-header">🎉 Quà Hiếm! 🎉</div>
+                <div class="reward-image-container">
+                    <img src="" alt="Reward" class="reward-image" id="reward-img">
+                </div>
+                <div class="reward-name" id="reward-name">Tên món quà</div>
+                <div class="reward-note">
+                    📸 Chụp màn hình và gửi cho <b>Trọng Phúc</b> để đổi quà nha!
+                </div>
+                <button class="reward-close-btn" onclick="closeRewardPopup()">Tiếp tục</button>
+            </div>
+        </div>
     </div>
 
     <div class="instructions">
@@ -56,6 +70,7 @@
         </div>
     </div>
 
+    <script src="../../sound-manager.js"></script>
     <script src="game.js"></script>
 </body>
 

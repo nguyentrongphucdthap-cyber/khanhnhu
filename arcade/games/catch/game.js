@@ -24,6 +24,29 @@ const ITEMS = [
     { emoji: '💣', points: -1, weight: 15, color: '#374151', isBomb: true }
 ];
 
+// Rare Items Configuration
+const RARE_ITEMS = [
+    { id: 'pen_blue', img: 'img/1.png', name: '[5 Bút Xanh] Bút Gel Đệm Xốp Deli Ngòi ST 0.5mm', prob: 0.00001 },
+    { id: 'pen_red', img: 'img/1.png', name: '[5 Bút Đỏ] Bút Gel Đệm Xốp Deli Ngòi ST 0.5mm', prob: 0.00001 },
+    { id: 'pen_black', img: 'img/1.png', name: '[5 Bút Đen] Bút Gel Đệm Xốp Deli Ngòi ST 0.5mm', prob: 0.00001 },
+    { id: 'pencils', img: 'img/2.png', name: 'Hộp 10 bút chì màu Hồng chuyển gradient', prob: 0.000009 },
+    { id: 'vangogh', img: 'img/3.png', name: 'Bộ bút bi tranh Van Gogh', prob: 0.00002 },
+    { id: 'sharpener', img: 'img/4.png', name: 'Gọt bút chì Deli', prob: 0.00004 },
+    { id: 'mug', img: 'img/5.png', name: 'Cốc sứ Thỏ Hồng', prob: 0.000001 }
+];
+
+let rareImages = {};
+
+function loadRareImages() {
+    RARE_ITEMS.forEach(item => {
+        if (!rareImages[item.img]) {
+            const img = new Image();
+            img.src = item.img;
+            rareImages[item.img] = img;
+        }
+    });
+}
+
 let canvas, ctx;
 let gameRunning = false;
 let score = 0, highScore = 0, lives = 3;
@@ -209,11 +232,14 @@ function startGame() {
     document.getElementById('lives').textContent = '3';
 
     gameRunning = true;
+    SoundManager.playBGM('ZBwCqs2REtU');
+    loadRareImages(); // Ensure images are loading
     requestAnimationFrame(gameLoop);
 }
 
 function gameOver() {
     gameRunning = false;
+    SoundManager.stopBGM();
 
     let isNewHighscore = false;
     if (score > highScore) {
@@ -278,13 +304,23 @@ function update(currentTime) {
                 shakeScreen();
 
                 if (lives <= 0) {
+                    SoundManager.playGameOver();
                     gameOver();
                     return;
+                } else {
+                    SoundManager.playBad();
                 }
+            } else if (item.isRare) {
+                // Rare Item Caught!
+                SoundManager.playCollect(); // Or special sound
+                showRewardPopup(item);
+                fallingItems.splice(i, 1);
+                return; // Stop update loop to pause
             } else {
                 score += item.points;
                 document.getElementById('current-score').textContent = score;
                 createParticles(item.x, item.y, item.color, 6);
+                SoundManager.playCollect();
             }
 
             fallingItems.splice(i, 1);
@@ -316,6 +352,26 @@ function update(currentTime) {
 }
 
 function spawnItem(width) {
+    // Check for rare item spawn first
+    const rareRoll = Math.random();
+    // Accumulate probabilities roughly for single roll or iterate
+    // Since probs are tiny and exclusive events ideally
+    for (const rare of RARE_ITEMS) {
+        if (Math.random() < rare.prob) { // Independent roll for each? Or single roll?
+            // Given the tiny probability, independent rolls are fine and easiest.
+            fallingItems.push({
+                x: 25 + Math.random() * (width - 50),
+                y: -CONFIG.ITEM_SIZE * 2, // Bigger
+                isRare: true,
+                imgSrc: rare.img,
+                name: rare.name,
+                points: 999, // Bonus points
+                speed: CONFIG.BASE_FALL_SPEED * 1.5 // Fall faster? or slower? Let's say normal.
+            });
+            return; // Spawn only one thing
+        }
+    }
+
     const totalWeight = ITEMS.reduce((sum, item) => sum + item.weight, 0);
     let rand = Math.random() * totalWeight;
     let selected = ITEMS[0];
@@ -394,7 +450,18 @@ function draw() {
 
     for (let i = 0; i < fallingItems.length; i++) {
         const item = fallingItems[i];
-        ctx.fillText(item.emoji, item.x, item.y);
+        if (item.isRare && rareImages[item.imgSrc]) {
+            // Draw Rare Image
+            const img = rareImages[item.imgSrc];
+            const size = CONFIG.ITEM_SIZE * 2.5; // Bigger
+            ctx.save();
+            ctx.shadowColor = 'gold';
+            ctx.shadowBlur = 15;
+            ctx.drawImage(img, item.x - size / 2, item.y - size / 2, size, size);
+            ctx.restore();
+        } else {
+            ctx.fillText(item.emoji, item.x, item.y);
+        }
     }
 
     // Basket
@@ -441,6 +508,32 @@ function drawBasket() {
     ctx.arc(x + w / 2, y - 8, 18, Math.PI, 0);
     ctx.stroke();
 }
+
+// Reward Popup Handling
+function showRewardPopup(item) {
+    gameRunning = false; // Pause game
+    const overlay = document.getElementById('reward-overlay');
+    const imgEl = document.getElementById('reward-img');
+    const nameEl = document.getElementById('reward-name');
+
+    imgEl.src = item.imgSrc;
+    nameEl.textContent = item.name;
+
+    overlay.classList.add('visible');
+    // Also add special sound effect?
+}
+
+function closeRewardPopup() {
+    const overlay = document.getElementById('reward-overlay');
+    overlay.classList.remove('visible');
+    gameRunning = true;
+    lastTime = performance.now();
+    requestAnimationFrame(gameLoop);
+}
+
+// Make globally available
+window.showRewardPopup = showRewardPopup;
+window.closeRewardPopup = closeRewardPopup;
 
 // Start
 init();

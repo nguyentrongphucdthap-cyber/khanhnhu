@@ -189,8 +189,16 @@ function spinGacha(count = 1) {
 
         // Loop Roll Items
         const results = [];
+        const hasSpunBefore = localStorage.getItem('arcade_gacha_welcome');
+
         for (let i = 0; i < count; i++) {
-            results.push(rollItem());
+            // First time ever spin (i=0 of the batch) gets guaranteed reward
+            if (!hasSpunBefore && i === 0) {
+                results.push(rollGuaranteedItem());
+                localStorage.setItem('arcade_gacha_welcome', 'true');
+            } else {
+                results.push(rollItem());
+            }
         }
 
         if (count === 1) {
@@ -207,6 +215,27 @@ function spinGacha(count = 1) {
         renderCollection();
 
     }, 1500);
+}
+
+function rollGuaranteedItem() {
+    // Filter out Mug (ID '5')
+    const pool = GACHA_ITEMS.filter(item => item.id !== '5');
+
+    // Pick random
+    const selected = pool[Math.floor(Math.random() * pool.length)];
+
+    // Add to inventory
+    const inventory = JSON.parse(localStorage.getItem('arcade_inventory') || '[]');
+    let type = 'new';
+
+    if (inventory.includes(selected.id)) {
+        type = 'duplicate';
+    } else {
+        inventory.push(selected.id);
+        localStorage.setItem('arcade_inventory', JSON.stringify(inventory));
+    }
+
+    return { type: type, item: selected, isGuaranteed: true };
 }
 
 function rollItem() {

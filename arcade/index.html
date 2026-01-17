@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>🎮 Khánh Như Arcade</title>
+    <meta name="description" content="Trung tâm game arcade dành riêng cho Khánh Như">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">
+                <span class="logo-emoji">🎮</span>
+                <div class="logo-text">
+                    <h1>Khánh Như Arcade</h1>
+                    <p>Thế giới game của riêng bạn!</p>
+                </div>
+            </div>
+            <div class="stats">
+                <div class="stat">
+                    <span class="stat-icon">🏆</span>
+                    <div class="stat-info">
+                        <span class="stat-value" id="total-highscore">0</span>
+                        <span class="stat-label">Tổng điểm</span>
+                    </div>
+                </div>
+                <div class="stat">
+                    <span class="stat-icon">🎯</span>
+                    <div class="stat-info">
+                        <span class="stat-value" id="games-played">0</span>
+                        <span class="stat-label">Lượt chơi</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main">
+        <!-- Welcome Banner -->
+        <section class="welcome-banner">
+            <div class="welcome-emoji">�</div>
+            <div class="welcome-text">
+                <h2>Chào mừng Khánh Như!</h2>
+                <p>Chọn game yêu thích và bắt đầu chơi thôi nào! 🌟</p>
+            </div>
+        </section>
+
+        <!-- Games Section -->
+        <section class="games-section">
+            <h2 class="section-title">
+                <span>🕹️</span> Chọn game
+            </h2>
+
+            <div class="games-grid">
+                <!-- Game 1: Dino -->
+                <a href="games/dino/index.html" class="game-card game-dino">
+                    <div class="game-badge">HOT 🔥</div>
+                    <div class="game-icon">🦖</div>
+                    <div class="game-content">
+                        <h3>Khủng Long</h3>
+                        <p>Nhảy qua chướng ngại vật!</p>
+                        <div class="game-tags">
+                            <span class="tag tag-easy">Dễ chơi</span>
+                            <span class="tag">Endless</span>
+                        </div>
+                    </div>
+                    <div class="game-score">
+                        <span>🏆</span>
+                        <span id="dino-highscore">0</span>
+                    </div>
+                    <div class="play-hint">
+                        <span>Chơi ngay</span>
+                        <span class="arrow">→</span>
+                    </div>
+                </a>
+
+                <!-- Game 2: Catch -->
+                <a href="games/catch/index.html" class="game-card game-catch">
+                    <div class="game-badge favorite">⭐ YÊU THÍCH</div>
+                    <div class="game-icon">🎁</div>
+                    <div class="game-content">
+                        <h3>Hứng Quà</h3>
+                        <p>Hứng quà, tránh bom nổ!</p>
+                        <div class="game-tags">
+                            <span class="tag tag-medium">Trung bình</span>
+                            <span class="tag">Endless</span>
+                        </div>
+                    </div>
+                    <div class="game-score">
+                        <span>🏆</span>
+                        <span id="catch-highscore">0</span>
+                    </div>
+                    <div class="play-hint">
+                        <span>Chơi ngay</span>
+                        <span class="arrow">→</span>
+                    </div>
+                </a>
+
+                <!-- Game 3: Whack -->
+                <a href="games/whack/index.html" class="game-card game-whack">
+                    <div class="game-badge">NHANH TAY 🎯</div>
+                    <div class="game-icon">🔨</div>
+                    <div class="game-content">
+                        <h3>Đập Chuột</h3>
+                        <p>Đập chuột trong 60 giây!</p>
+                        <div class="game-tags">
+                            <span class="tag tag-hard">Khó</span>
+                            <span class="tag">60 giây</span>
+                        </div>
+                    </div>
+                    <div class="game-score">
+                        <span>🏆</span>
+                        <span id="whack-highscore">0</span>
+                    </div>
+                    <div class="play-hint">
+                        <span>Chơi ngay</span>
+                        <span class="arrow">→</span>
+                    </div>
+                </a>
+
+                <!-- Game 4: Protect -->
+                <a href="games/protect/index.html" class="game-card game-protect">
+                    <div class="game-badge special">👑 ĐẶC BIỆT</div>
+                    <div class="game-icon">🛡️</div>
+                    <div class="game-content">
+                        <h3>Bảo Vệ Khánh Như</h3>
+                        <p>Bắn quái vật bảo vệ!</p>
+                        <div class="game-tags">
+                            <span class="tag tag-hard">Thử thách</span>
+                            <span class="tag">Wave</span>
+                        </div>
+                    </div>
+                    <div class="game-score">
+                        <span>🏆</span>
+                        <span id="protect-highscore">0</span>
+                    </div>
+                    <div class="play-hint">
+                        <span>Chơi ngay</span>
+                        <span class="arrow">→</span>
+                    </div>
+                </a>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>💖 Tạo với tình yêu dành cho Khánh Như 💖</p>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+
+</html>

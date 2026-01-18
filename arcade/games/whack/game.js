@@ -4,8 +4,9 @@
 // ============================================
 
 const CONFIG = {
-    GAME_DURATION: 45,
+    GAME_DURATION: 300, // 5 minutes
     HOLES_COUNT: 9,
+    MAX_BOMBS: 5,
 
     // Mole timing (Slower and easier)
     INITIAL_UP_TIME: 1500,  // Was 1200
@@ -27,6 +28,7 @@ let highScore = 0;
 let timeLeft = CONFIG.GAME_DURATION;
 let combo = 0;
 let maxCombo = 0;
+let bombCount = 0;
 
 let holes = [];
 let moles = [];
@@ -99,10 +101,13 @@ function startGame() {
     timeLeft = CONFIG.GAME_DURATION;
     combo = 0;
     maxCombo = 0;
+    bombCount = 0;
 
     document.getElementById('current-score').textContent = '0';
-    document.getElementById('timer').textContent = timeLeft;
+    document.getElementById('timer').textContent = formatTimer(timeLeft);
     document.getElementById('timer').style.color = '';
+    document.getElementById('bombs-count').textContent = `0/${CONFIG.MAX_BOMBS}`;
+    document.getElementById('bombs-count').style.color = '#ef4444';
 
     // Start BGM
     SoundManager.playBGM('yA41iunMG6A');
@@ -113,7 +118,7 @@ function startGame() {
     if (gameTimer) clearInterval(gameTimer);
     gameTimer = setInterval(() => {
         timeLeft--;
-        document.getElementById('timer').textContent = timeLeft;
+        document.getElementById('timer').textContent = formatTimer(timeLeft);
 
         if (timeLeft <= 10) {
             document.getElementById('timer').style.color = '#ef4444';
@@ -132,6 +137,10 @@ function startGame() {
 function gameOver() {
     gameRunning = false;
     SoundManager.stopBGM();
+
+    // Add score to Wallet (Score can be negative in whack? Just in case, max(0))
+    const currentWallet = parseInt(localStorage.getItem('arcade_wallet_points') || 0);
+    localStorage.setItem('arcade_wallet_points', currentWallet + Math.max(0, score));
 
     clearInterval(gameTimer);
     clearTimeout(spawnTimeout);
@@ -315,6 +324,16 @@ function whackMole(index) {
         // Bad hit - reset combo
         SoundManager.playBad();
         combo = 0;
+
+        // Bomb logic
+        bombCount++;
+        document.getElementById('bombs-count').textContent = `${bombCount}/${CONFIG.MAX_BOMBS}`;
+
+        if (bombCount >= CONFIG.MAX_BOMBS) {
+            SoundManager.playGameOver();
+            gameOver();
+            return;
+        }
     }
 
     // Update score
@@ -359,6 +378,12 @@ function shakeScreen(isHard = false) {
     container.classList.remove('shaking', 'shaking-hard'); // Reset
     void container.offsetWidth; // Force reflow
     container.classList.add(isHard ? 'shaking-hard' : 'shaking');
+}
+
+function formatTimer(sec) {
+    const m = Math.floor(sec / 60);
+    const s = sec % 60;
+    return `${m}:${s.toString().padStart(2, '0')}`;
 }
 
 // Start

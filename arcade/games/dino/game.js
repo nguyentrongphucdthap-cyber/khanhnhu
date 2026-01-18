@@ -251,12 +251,18 @@ function startGame() {
     document.getElementById('current-score').textContent = '0';
 
     gameRunning = true;
+    SoundManager.playBGM('Ny-GPZbPgOI');
     lastTime = performance.now();
     requestAnimationFrame(gameLoop);
 }
 
 function gameOver() {
     gameRunning = false;
+    SoundManager.stopBGM();
+
+    // Add score to Wallet
+    const currentWallet = parseInt(localStorage.getItem('arcade_wallet_points') || 0);
+    localStorage.setItem('arcade_wallet_points', currentWallet + score);
 
     // Update highscore
     let isNewHighscore = false;

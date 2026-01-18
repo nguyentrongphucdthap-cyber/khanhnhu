@@ -241,6 +241,10 @@ function gameOver() {
     gameRunning = false;
     SoundManager.stopBGM();
 
+    // Add score to Wallet
+    const currentWallet = parseInt(localStorage.getItem('arcade_wallet_points') || 0);
+    localStorage.setItem('arcade_wallet_points', currentWallet + score);
+
     let isNewHighscore = false;
     if (score > highScore) {
         highScore = score;

@@ -428,6 +428,10 @@ body {
     background: linear-gradient(135deg, white 50%, var(--color-protect-light) 100%);
 }
 
+.special-gacha {
+    cursor: pointer;
+}
+
 .game-icon-wrapper {
     width: 100px;
     height: 100px;

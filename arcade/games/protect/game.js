@@ -166,7 +166,8 @@ function loadImages() {
         { key: 'monster4', src: 'img/monster4.png' },
         { key: 'monster5', src: 'img/monster5.png' },
         { key: 'miniBoss', src: 'img/miniboss1.png' },
-        { key: 'boss', src: 'img/boss1.png' }
+        { key: 'boss', src: 'img/boss1.png' },
+        { key: 'khanhnhu', src: 'img/khanhnhu.png' }
     ];
 
     let loaded = 0;
@@ -679,8 +680,10 @@ function update(currentTime) {
     });
 
     // Spawn enemies
-    const spawnRate = Math.max(CONFIG.SPAWN_RATE_MIN, CONFIG.SPAWN_RATE_START - stats.gameTime * 5);
-    if (currentTime - lastSpawnTime > spawnRate && enemies.length < CONFIG.MAX_ENEMIES) {
+    // Accelerate spawn rate significantly faster: Reach max speed in ~2 minutes
+    const spawnRate = Math.max(CONFIG.SPAWN_RATE_MIN, CONFIG.SPAWN_RATE_START - stats.gameTime * 20);
+
+    if (currentTime - lastSpawnTime > spawnRate) {
         spawnEnemy(width, height);
         lastSpawnTime = currentTime;
     }
@@ -816,26 +819,34 @@ function spawnEnemy(width, height) {
         currentPhase = 3;       // 4+ minutes
     }
 
+    // Difficulty Scaling
+    const minutes = stats.gameTime / 60;
+    const hpMultiplier = 1 + (minutes * 0.5); // +50% HP per minute
+
+    // Increase mob cap: +15 enemies per minute
+    const dynamicMaxEnemies = CONFIG.MAX_ENEMIES + Math.floor(minutes * 15);
+
+    // Stop if limit reached
+    if (enemies.length >= dynamicMaxEnemies) return;
+
     // Swarm mechanic: determine group size
     let groupSize;
     const rand = Math.random();
 
-    if (stats.gameTime >= 60) {
-        // After 1 minute: can spawn large groups
-        if (rand < 0.15) {
-            groupSize = 4 + Math.floor(Math.random() * 3); // 4-6 (large swarm)
-        } else if (rand < 0.45) {
-            groupSize = 2 + Math.floor(Math.random() * 2); // 2-3 (medium group)
-        } else {
-            groupSize = 1; // Single monster
-        }
+    if (stats.gameTime >= 180) {
+        // 3+ mins: Nightmare Swarms
+        if (rand < 0.2) groupSize = 10 + Math.floor(Math.random() * 5); // 10-15
+        else if (rand < 0.5) groupSize = 5 + Math.floor(Math.random() * 5); // 5-10
+        else groupSize = 2;
+    } else if (stats.gameTime >= 60) {
+        // 1+ mins: Big Groups
+        if (rand < 0.15) groupSize = 4 + Math.floor(Math.random() * 4); // 4-8
+        else if (rand < 0.45) groupSize = 2 + Math.floor(Math.random() * 2); // 2-3
+        else groupSize = 1;
     } else {
-        // First minute: only small groups
-        if (rand < 0.4) {
-            groupSize = 2 + Math.floor(Math.random() * 2); // 2-3
-        } else {
-            groupSize = 1; // Single
-        }
+        // Early game
+        if (rand < 0.3) groupSize = 2 + Math.floor(Math.random() * 2);
+        else groupSize = 1;
     }
 
     // Spawn position (group spawns from same general area)
@@ -854,23 +865,24 @@ function spawnEnemy(width, height) {
 
     // Spawn group
     for (let i = 0; i < groupSize; i++) {
-        if (enemies.length >= CONFIG.MAX_ENEMIES) break;
+        // Check dynamic limit inside loop
+        if (enemies.length >= dynamicMaxEnemies) break;
 
         const type = phaseMonsters[Math.floor(Math.random() * phaseMonsters.length)];
         const template = ENEMIES[type];
 
         // Offset position slightly for group members
-        const offsetX = (Math.random() - 0.5) * 40;
-        const offsetY = (Math.random() - 0.5) * 40;
+        const offsetX = (Math.random() - 0.5) * 60; // Wider spread for larger groups
+        const offsetY = (Math.random() - 0.5) * 60;
 
         enemies.push({
             x: baseX + offsetX,
             y: baseY + offsetY,
             type,
             imgKey: type,
-            hp: template.hp,
-            maxHp: template.hp,
-            speed: template.speed * (1 + stats.gameTime / 400), // Slower scaling
+            hp: template.hp * hpMultiplier,
+            maxHp: template.hp * hpMultiplier,
+            speed: template.speed * (1 + stats.gameTime / 300),
             xp: template.xp,
             gold: template.gold,
             damage: template.damage,
@@ -1176,6 +1188,7 @@ function drawArena(width, height) {
 }
 
 function drawKhanhNhu() {
+    // Glow effect
     const glowSize = 50 + Math.sin(performance.now() / 300) * 5;
     const glow = ctx.createRadialGradient(kn.x, kn.y, 0, kn.x, kn.y, glowSize);
     glow.addColorStop(0, 'rgba(236, 72, 153, 0.4)');
@@ -1185,10 +1198,43 @@ function drawKhanhNhu() {
     ctx.arc(kn.x, kn.y, glowSize, 0, Math.PI * 2);
     ctx.fill();
 
-    ctx.font = `${CONFIG.KN_SIZE}px Arial`;
+    // Draw Image
+    const knImg = images['khanhnhu'];
+    const size = CONFIG.KN_SIZE + 30; // Slightly larger for visibility
+
+    if (knImg && knImg.complete) {
+        const aspect = imageAspects['khanhnhu'] || 1;
+        let drawW, drawH;
+
+        if (aspect >= 1) {
+            drawW = size;
+            drawH = size / aspect;
+        } else {
+            drawH = size;
+            drawW = size * aspect;
+        }
+        ctx.drawImage(knImg, kn.x - drawW / 2, kn.y - drawH / 2, drawW, drawH);
+    } else {
+        // Fallback
+        ctx.font = `${CONFIG.KN_SIZE}px Arial`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('💖', kn.x, kn.y);
+    }
+
+    // Draw Name "Khánh Như"
+    ctx.font = '700 16px "Nunito", sans-serif';
     ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText('💖', kn.x, kn.y);
+    ctx.textBaseline = 'bottom';
+
+    // Outline for better visibility
+    ctx.lineWidth = 3;
+    ctx.strokeStyle = '#ec4899'; // Pink stroke
+    ctx.strokeText('Khánh Như', kn.x, kn.y - size / 2 - 5);
+
+    // Fill text
+    ctx.fillStyle = '#ffffff';
+    ctx.fillText('Khánh Như', kn.x, kn.y - size / 2 - 5);
 }
 
 function drawPlayer() {

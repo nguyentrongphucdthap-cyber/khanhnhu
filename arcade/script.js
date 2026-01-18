@@ -7,12 +7,12 @@ const STORAGE_KEYS = {
     WHACK_HIGHSCORE: 'arcade_whack_highscore',
     PROTECT_HIGHSCORE: 'arcade_protect_highscore',
     GAMES_PLAYED: 'arcade_games_played',
-    WALLET: 'arcade_wallet_points' // Đây là key lưu số dư ví thực tế
+    WALLET: 'arcade_wallet_points'
 };
 
 // Initialize arcade
 document.addEventListener('DOMContentLoaded', () => {
-    // Logic chuyển đổi (Migrate): Nếu ví chưa tồn tại, tạo ví từ dữ liệu cũ
+    // Migrate Logic: If wallet doesn't exist, create it from legacy formula
     if (localStorage.getItem(STORAGE_KEYS.WALLET) === null) {
         const dino = parseInt(localStorage.getItem(STORAGE_KEYS.DINO_HIGHSCORE) || 0);
         const catchG = parseInt(localStorage.getItem(STORAGE_KEYS.CATCH_HIGHSCORE) || 0);
@@ -20,7 +20,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const protect = parseInt(localStorage.getItem(STORAGE_KEYS.PROTECT_HIGHSCORE) || 0);
         const spent = parseInt(localStorage.getItem('arcade_spent_points') || 0);
 
-        // Ví khởi tạo = Tổng điểm kỷ lục - Số điểm đã tiêu (nếu có)
         const initialWallet = Math.max(0, (dino + catchG + whack + protect) - spent);
         localStorage.setItem(STORAGE_KEYS.WALLET, initialWallet);
     }
@@ -32,7 +31,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Load highscores from localStorage
 function loadHighscores() {
-    // Hiển thị điểm kỷ lục từng game (để người chơi biết thành tích)
     const dinoScore = localStorage.getItem(STORAGE_KEYS.DINO_HIGHSCORE) || 0;
     const catchScore = localStorage.getItem(STORAGE_KEYS.CATCH_HIGHSCORE) || 0;
     const whackScore = localStorage.getItem(STORAGE_KEYS.WHACK_HIGHSCORE) || 0;
@@ -43,12 +41,9 @@ function loadHighscores() {
     document.getElementById('whack-highscore').textContent = formatNumber(whackScore);
     document.getElementById('protect-highscore').textContent = formatNumber(protectScore);
 
-    // QUAN TRỌNG: Hiển thị Số dư ví (Wallet) thay vì Tổng điểm Highscore
+    // Display Wallet Points in Header (was Total Highscore)
     const wallet = parseInt(localStorage.getItem(STORAGE_KEYS.WALLET) || 0);
-    const totalEl = document.getElementById('total-highscore');
-    if (totalEl) {
-        totalEl.textContent = formatNumber(wallet); // Chỉ hiển thị số tiền còn lại
-    }
+    document.getElementById('total-highscore').textContent = formatNumber(wallet);
 }
 
 // Load games played stats
@@ -87,40 +82,16 @@ function incrementGamesPlayed() {
     localStorage.setItem(STORAGE_KEYS.GAMES_PLAYED, gamesPlayed);
 }
 
-// --- HÀM CẬP NHẬT ĐIỂM (QUAN TRỌNG) ---
+// Update highscore (called from individual games)
 function updateHighscore(game, score) {
-    // 1. Cập nhật Kỷ lục (Chỉ để hiển thị thành tích cao nhất)
     const key = STORAGE_KEYS[`${game.toUpperCase()}_HIGHSCORE`];
     const currentHighscore = parseInt(localStorage.getItem(key) || 0);
-    let isNewHighscore = false;
 
     if (score > currentHighscore) {
         localStorage.setItem(key, score);
-        isNewHighscore = true;
+        return true; // New highscore!
     }
-
-    // 2. CỘNG TIỀN VÀO VÍ (Cày cuốc)
-    // Lấy số dư hiện tại
-    const currentWallet = parseInt(localStorage.getItem(STORAGE_KEYS.WALLET) || 0);
-    // Cộng thêm điểm vừa chơi được
-    const newWallet = currentWallet + score;
-    // Lưu số dư mới
-    localStorage.setItem(STORAGE_KEYS.WALLET, newWallet);
-
-    // 3. Cập nhật giao diện ngay lập tức
-    // Cập nhật số dư trên Header
-    const totalEl = document.getElementById('total-highscore');
-    if (totalEl) {
-        totalEl.textContent = formatNumber(newWallet);
-    }
-    
-    // Cập nhật số dư trong Modal Gacha (nếu đang mở)
-    const gachaEl = document.getElementById('user-points-display');
-    if (gachaEl) {
-        gachaEl.textContent = formatNumber(newWallet);
-    }
-
-    return isNewHighscore;
+    return false;
 }
 
 // Export for use in games
@@ -130,7 +101,7 @@ window.ArcadeHelper = {
     STORAGE_KEYS
 };
 
-/* --- GACHA SYSTEM LOGIC --- */
+/* --- GACHA SYSTEM LOGIC (UPDATED WITH WALLET SYSTEM) --- */
 const GACHA_ITEMS = [
     { id: '1', img: 'games/catch/img/1.png', name: 'Bút Gel Xanh', prob: 0.01 }, // 1%
     { id: '1b', img: 'games/catch/img/1.png', name: 'Bút Gel Đỏ', prob: 0.01 },
@@ -148,7 +119,7 @@ function openGacha(e) {
         e.stopPropagation();
     }
 
-    // Luôn lấy số dư ví hiện tại để hiển thị
+    // Update points display
     const currentWallet = getTotalPoints();
     document.getElementById('user-points-display').textContent = formatNumber(currentWallet);
 
@@ -167,11 +138,10 @@ function openGacha(e) {
 
 function closeGacha() {
     document.getElementById('gacha-modal').classList.add('hidden');
-    // Cập nhật lại màn hình chính khi đóng
+    // Refresh main display too just in case
     loadHighscores();
 }
 
-// Hàm lấy số dư ví
 function getTotalPoints() {
     return parseInt(localStorage.getItem(STORAGE_KEYS.WALLET) || 0);
 }
@@ -185,11 +155,11 @@ function spinGacha(count = 1) {
         return;
     }
 
-    // TRỪ ĐIỂM TRỰC TIẾP TỪ VÍ
+    // Deduct points directly
     const newWallet = currentWallet - cost;
     localStorage.setItem(STORAGE_KEYS.WALLET, newWallet);
 
-    // Cập nhật hiển thị số dư MỚI
+    // Update UI
     document.getElementById('user-points-display').textContent = formatNumber(newWallet);
     document.getElementById('total-highscore').textContent = formatNumber(newWallet);
 

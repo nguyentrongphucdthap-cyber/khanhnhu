@@ -71,6 +71,24 @@ body {
     color: #22c55e;
 }
 
+.stat-box {
+    text-align: center;
+    background: #fff;
+    border-radius: 8px;
+    min-width: 45px;
+}
+
+.stat-icon {
+    font-size: 0.7rem;
+    margin-bottom: 2px;
+}
+
+.stat-value {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #ef4444;
+}
+
 .game-container {
     position: relative;
     flex: 1;

@@ -953,3 +953,148 @@ body {
         transform: scale(1);
     }
 }
+
+/* GACHA 3D CARDS */
+.gacha-stage {
+    width: 100%;
+    height: 100%;
+    min-height: 250px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    perspective: 1000px;
+    flex-wrap: wrap;
+    gap: 15px;
+    padding: 10px;
+}
+
+.placeholder-text {
+    color: #9ca3af;
+    font-size: 1.2rem;
+    font-weight: 600;
+}
+
+.flip-card {
+    background-color: transparent;
+    width: 100px;
+    /* Mini size for multi */
+    height: 140px;
+    perspective: 1000px;
+    animation: dealIn 0.5s ease-out backwards;
+}
+
+.flip-card.single {
+    width: 160px;
+    height: 220px;
+}
+
+.flip-card-inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    text-align: center;
+    transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    transform-style: preserve-3d;
+    cursor: pointer;
+}
+
+.flip-card.flipped .flip-card-inner {
+    transform: rotateY(180deg);
+}
+
+.flip-card-front,
+.flip-card-back {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+    border-radius: 12px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+/* Card Back (Mặt úp - Pattern đẹp) */
+.flip-card-front {
+    background: linear-gradient(135deg, #4f46e5 0%, #9333ea 50%, #db2777 100%);
+    border: 2px solid rgba(255, 255, 255, 0.4);
+}
+
+.flip-card-front::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+        radial-gradient(circle at 20% 30%, rgba(255, 255, 255, 0.2) 2px, transparent 3px),
+        radial-gradient(circle at 80% 70%, rgba(255, 255, 255, 0.2) 2px, transparent 3px);
+    background-size: 20px 20px;
+}
+
+.flip-card-front::after {
+    content: '★';
+    font-size: 3rem;
+    color: rgba(255, 255, 255, 0.8);
+    filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.5));
+    animation: pulse 2s infinite;
+}
+
+/* Card Front (Mặt ngửa - Phần thưởng) */
+.flip-card-back {
+    background-color: white;
+    transform: rotateY(180deg);
+    border: 3px solid #e5e7eb;
+    padding: 10px;
+}
+
+.flip-card-back img {
+    width: 70%;
+    height: 70%;
+    object-fit: contain;
+    margin-bottom: 5px;
+    filter: drop-shadow(0 4px 4px rgba(0, 0, 0, 0.1));
+}
+
+.card-reward-name {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #1f2937;
+    margin-top: auto;
+    margin-bottom: 5px;
+    line-height: 1.2;
+}
+
+.card-reward-type {
+    font-size: 0.6rem;
+    padding: 2px 6px;
+    border-radius: 10px;
+    background: #f3f4f6;
+    color: #6b7280;
+    font-weight: 600;
+}
+
+/* Rare Styling */
+.flip-card-back.rare {
+    background: radial-gradient(circle, #fffbeb, #fff);
+    border-color: #f59e0b;
+    box-shadow: 0 0 15px rgba(245, 158, 11, 0.3);
+}
+
+.flip-card-back.rare .card-reward-name {
+    color: #d97706;
+}
+
+@keyframes dealIn {
+    0% {
+        opacity: 0;
+        transform: translateY(50px) scale(0.5) rotate(-10deg);
+    }
+
+    100% {
+        opacity: 1;
+        transform: translateY(0) scale(1) rotate(0deg);
+    }
+}

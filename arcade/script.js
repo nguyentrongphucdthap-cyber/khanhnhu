@@ -29,6 +29,13 @@ document.addEventListener('DOMContentLoaded', () => {
     setupCardInteractions();
 });
 
+// Fix: Reload data when returning to the page (handling Mobile Back Cache)
+window.addEventListener('pageshow', (event) => {
+    // Always reload to ensure points are up to date
+    loadHighscores();
+    loadStats();
+});
+
 // Load highscores from localStorage
 function loadHighscores() {
     const dinoScore = localStorage.getItem(STORAGE_KEYS.DINO_HIGHSCORE) || 0;
@@ -109,7 +116,7 @@ const GACHA_ITEMS = [
     { id: '2', img: 'games/catch/img/2.png', name: 'Bút Chì Gradient', prob: 0.009 }, // 0.9%
     { id: '3', img: 'games/catch/img/3.png', name: 'Bộ Bút Van Gogh', prob: 0.02 }, // 2%
     { id: '4', img: 'games/catch/img/4.png', name: 'Gọt Bút Chì', prob: 0.04 }, // 4%
-    { id: '5', img: 'games/catch/img/5.png', name: 'Cốc Thỏ Hồng', prob: 0.001 } // 0.1%
+    { id: '5', img: 'games/catch/img/5.png', name: 'Cốc Thỏ Hồng', prob: 0.00125 } // 1/800 (0.125%)
 ];
 const GACHA_COST = 200;
 

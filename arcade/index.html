@@ -214,17 +214,10 @@
                 <div class="spin-counter-badge">Đã quay: <span id="total-spins-display">0</span> lần</div>
             </div>
 
-            <div class="gacha-display">
-                <div id="gacha-box" class="gacha-box">🎁</div>
-                <!-- Single Config Result -->
-                <div id="gacha-result-container" class="gacha-result-container hidden">
-                    <img id="gacha-reward-img" src="" class="gacha-reward-img">
-                    <div id="gacha-reward-name" class="gacha-reward-name">Tên quà</div>
-                    <div id="gacha-reward-note" class="gacha-reward-note"></div>
-                </div>
-                <!-- Multi Config Result -->
-                <div id="gacha-multi-result" class="gacha-multi-result hidden">
-                    <!-- Grid items will be injected here -->
+            <div class="gacha-display" id="gacha-display-area">
+                <div id="gacha-stage" class="gacha-stage">
+                    <!-- Cards will be injected here via JS -->
+                    <div class="placeholder-text">Nhấn quay để bắt đầu!</div>
                 </div>
             </div>
 

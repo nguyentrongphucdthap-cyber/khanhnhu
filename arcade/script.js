@@ -187,61 +187,107 @@ function spinGacha(count = 1) {
     const spinDisplay = document.getElementById('total-spins-display');
     if (spinDisplay) spinDisplay.textContent = formatNumber(totalSpins);
 
-    // Disable buttons
+    // Disable buttons temporarily
     const btns = document.querySelectorAll('.spin-btn');
-    btns.forEach(b => {
-        b.disabled = true;
-        if (b.id === 'spin-btn-1') b.textContent = "Đang quay...";
-    });
+    btns.forEach(b => b.disabled = true);
 
-    // Animation
+    // Reset Stage
+    const stage = document.getElementById('gacha-stage');
+    // Hide old elements if they exist
     const box = document.getElementById('gacha-box');
-    const display = document.querySelector('.gacha-display');
-    const singleContainer = document.getElementById('gacha-result-container');
-    const multiContainer = document.getElementById('gacha-multi-result');
+    if (box) box.classList.add('hidden');
 
-    if (singleContainer) singleContainer.classList.add('hidden');
-    if (multiContainer) multiContainer.classList.add('hidden');
+    stage.innerHTML = ''; // Clear old cards
 
-    box.classList.remove('hidden');
-    box.className = 'gacha-box shaking'; // Shaking effect
-    display.classList.remove('burst');
+    // Generate Results
+    const results = [];
+    const hasSpunBefore = localStorage.getItem('arcade_gacha_welcome');
 
-    document.getElementById('gacha-result-container').classList.add('hidden');
-
-    setTimeout(() => {
-        // Result logic
-        box.className = 'gacha-box hidden'; // Hide box
-        display.classList.add('burst'); // Burst effect
-
-        // Loop Roll Items
-        const results = [];
-        const hasSpunBefore = localStorage.getItem('arcade_gacha_welcome');
-
-        for (let i = 0; i < count; i++) {
-            // First time ever spin (i=0 of the batch) gets guaranteed reward
-            if (!hasSpunBefore && i === 0) {
-                results.push(rollGuaranteedItem());
-                localStorage.setItem('arcade_gacha_welcome', 'true');
-            } else {
-                results.push(rollItem());
-            }
-        }
-
-        if (count === 1) {
-            displaySingleResult(results[0]);
+    for (let i = 0; i < count; i++) {
+        if (!hasSpunBefore && i === 0) {
+            results.push(rollGuaranteedItem());
+            localStorage.setItem('arcade_gacha_welcome', 'true');
         } else {
-            displayMultiResult(results);
+            results.push(rollItem());
         }
+    }
 
-        // Reset buttons
+    // Render Cards
+    renderCards(results);
+    renderCollection();
+
+    // Re-enable buttons after animation deal
+    setTimeout(() => {
         btns.forEach(b => b.disabled = false);
         const btn1 = document.getElementById('spin-btn-1');
         if (btn1) btn1.textContent = `Quay 1 (${GACHA_COST}đ)`;
+    }, 1000);
+}
 
-        renderCollection();
+function renderCards(results) {
+    const stage = document.getElementById('gacha-stage');
+    const isSingle = results.length === 1;
 
-    }, 1500);
+    results.forEach((res, index) => {
+        const card = createCardElement(res, isSingle, index);
+        stage.appendChild(card);
+    });
+}
+
+function createCardElement(result, isSingle, index) {
+    const wrapper = document.createElement('div');
+    wrapper.className = `flip-card ${isSingle ? 'single' : ''}`;
+    wrapper.style.animationDelay = `${index * 0.1}s`;
+
+    const inner = document.createElement('div');
+    inner.className = 'flip-card-inner';
+
+    // Front (Card Back Design)
+    const front = document.createElement('div');
+    front.className = 'flip-card-front';
+
+    // Back (Reward Info)
+    const back = document.createElement('div');
+    // Check rarity: ID 5 (Mug) is rare for example
+    const isRare = result.item && (result.item.id === '5' || result.item.prob < 0.02);
+    back.className = `flip-card-back ${isRare ? 'rare' : ''}`;
+
+    if (result.type === 'miss') {
+        back.innerHTML = `
+            <div style="font-size: 3rem;">💨</div>
+            <div class="card-reward-name">Chúc may mắn!</div>
+            <div class="card-reward-type">Trượt</div>
+        `;
+    } else {
+        const isDup = result.type === 'duplicate';
+        back.innerHTML = `
+            <img src="${result.item.img}" alt="${result.item.name}">
+            <div class="card-reward-name">${result.item.name}</div>
+            <div class="card-reward-type" style="${isDup ? 'background:#fed7aa;color:#c2410c' : 'background:#bbf7d0;color:#15803d'}">
+                ${isDup ? 'Đã có' : 'Mới!'}
+            </div>
+        `;
+    }
+
+    inner.appendChild(front);
+    inner.appendChild(back);
+    wrapper.appendChild(inner);
+
+    // FLIP LOGIC
+    wrapper.addEventListener('click', () => {
+        if (!wrapper.classList.contains('flipped')) {
+            wrapper.classList.add('flipped');
+        }
+    });
+
+    // Auto flip for single spin
+    if (isSingle) {
+        setTimeout(() => {
+            wrapper.classList.add('flipped');
+        }, 600);
+    }
+
+    return wrapper;
 }
 
 function rollGuaranteedItem() {

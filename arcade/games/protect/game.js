@@ -949,8 +949,10 @@ function update(currentTime) {
     player.x = Math.max(margin, Math.min(width - margin, player.x));
     player.y = Math.max(margin, Math.min(height - margin, player.y));
 
-    // Player fire
-    if (firePressed && currentTime - lastFireTime > stats.fireRate && enemies.length > 0) {
+    // Player fire - Auto fire is slower (1.5x delay), Manual is fast
+    const fireDelay = (autoFire && !firePressed) ? stats.fireRate * 1.5 : stats.fireRate;
+
+    if ((firePressed || autoFire) && currentTime - lastFireTime > fireDelay && enemies.length > 0) {
         fireAtNearestEnemy(player, currentTime, true);
         lastFireTime = currentTime;
     }

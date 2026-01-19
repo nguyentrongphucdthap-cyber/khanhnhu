@@ -39,6 +39,19 @@ window.addEventListener('pageshow', (event) => {
     loadStats();
 });
 
+// Update data when switching tabs/windows
+document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') {
+        loadHighscores();
+        loadStats();
+    }
+});
+
+window.addEventListener('focus', () => {
+    loadHighscores();
+    loadStats();
+});
+
 // Load highscores from localStorage
 function loadHighscores() {
     const dinoScore = localStorage.getItem(STORAGE_KEYS.DINO_HIGHSCORE) || 0;

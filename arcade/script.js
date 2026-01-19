@@ -211,6 +211,9 @@ function spinGacha(count = 1) {
     const btns = document.querySelectorAll('.spin-btn');
     btns.forEach(b => b.disabled = true);
 
+    const revealBtn = document.getElementById('reveal-all-btn');
+    if (revealBtn) revealBtn.classList.add('hidden');
+
     // Reset Stage
     const stage = document.getElementById('gacha-stage');
     // Hide old elements if they exist
@@ -241,7 +244,12 @@ function spinGacha(count = 1) {
         btns.forEach(b => b.disabled = false);
         const btn1 = document.getElementById('spin-btn-1');
         if (btn1) btn1.textContent = `Quay 1 (${GACHA_COST}đ)`;
-    }, 1000);
+
+        const revealBtn = document.getElementById('reveal-all-btn');
+        if (count > 1 && revealBtn) {
+            revealBtn.classList.remove('hidden');
+        }
+    }, 600);
 }
 
 function renderCards(results) {
@@ -257,7 +265,7 @@ function renderCards(results) {
 function createCardElement(result, isSingle, index) {
     const wrapper = document.createElement('div');
     wrapper.className = `flip-card ${isSingle ? 'single' : ''}`;
-    wrapper.style.animationDelay = `${index * 0.1}s`;
+    wrapper.style.animationDelay = `${index * 0.05}s`;
 
     const inner = document.createElement('div');
     inner.className = 'flip-card-inner';
@@ -312,7 +320,7 @@ function createCardElement(result, isSingle, index) {
 
     // Auto flip for single spin
     if (isSingle) {
-        setTimeout(flipAction, 600);
+        setTimeout(flipAction, 300);
     }
 
     return wrapper;
@@ -493,7 +501,7 @@ function revealAllCards() {
     cards.forEach((card, index) => {
         setTimeout(() => {
             card.click();
-        }, index * 100);
+        }, index * 50);
     });
 
     const btn = document.getElementById('reveal-all-btn');

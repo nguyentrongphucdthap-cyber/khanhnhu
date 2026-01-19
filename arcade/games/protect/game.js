@@ -55,26 +55,26 @@ const CONFIG = {
     BLADE_COOLDOWN: 10000
 };
 
-// Enemy types - speeds balanced (base 1.0, max ±20%)
+// Enemy types - speeds balanced (Reduced speed by 30%, HP by 25%)
 const ENEMIES = {
     // Phase 1 monsters (weakest)
-    monster1: { img: 'img/monster.png', hp: 1, speed: 1.0, xp: 8, gold: 4, damage: 4, width: 38, height: 38, phase: 1 },
-    monster2: { img: 'img/monster2.png', hp: 1, speed: 0.9, xp: 10, gold: 5, damage: 5, width: 42, height: 42, phase: 1 },
-    monster6: { img: 'img/monster6.png', hp: 1.2, speed: 1.1, xp: 9, gold: 5, damage: 4, width: 36, height: 36, phase: 1 },
+    monster1: { img: 'img/monster.png', hp: 0.75, speed: 0.7, xp: 8, gold: 4, damage: 4, width: 38, height: 38, phase: 1 },
+    monster2: { img: 'img/monster2.png', hp: 0.75, speed: 0.63, xp: 10, gold: 5, damage: 5, width: 42, height: 42, phase: 1 },
+    monster6: { img: 'img/monster6.png', hp: 0.9, speed: 0.77, xp: 9, gold: 5, damage: 4, width: 36, height: 36, phase: 1 },
 
     // Phase 2 monsters (medium)
-    monster3: { img: 'img/monster3.png', hp: 2, speed: 0.95, xp: 12, gold: 6, damage: 6, width: 40, height: 40, phase: 2 },
-    monster4: { img: 'img/monster4.png', hp: 1.5, speed: 1.1, xp: 10, gold: 5, damage: 5, width: 34, height: 34, phase: 2 },
-    monster7: { img: 'img/monster7.png', hp: 2.5, speed: 0.85, xp: 14, gold: 7, damage: 7, width: 42, height: 42, phase: 2 },
+    monster3: { img: 'img/monster3.png', hp: 1.5, speed: 0.66, xp: 12, gold: 6, damage: 6, width: 40, height: 40, phase: 2 },
+    monster4: { img: 'img/monster4.png', hp: 1.1, speed: 0.77, xp: 10, gold: 5, damage: 5, width: 34, height: 34, phase: 2 },
+    monster7: { img: 'img/monster7.png', hp: 1.9, speed: 0.6, xp: 14, gold: 7, damage: 7, width: 42, height: 42, phase: 2 },
 
     // Phase 3 monsters (strongest)
-    monster5: { img: 'img/monster5.png', hp: 3, speed: 0.9, xp: 18, gold: 10, damage: 10, width: 46, height: 46, phase: 3 },
-    monster8: { img: 'img/monster8.png', hp: 2.5, speed: 1.0, xp: 15, gold: 8, damage: 8, width: 40, height: 40, phase: 3 },
-    monster2b: { img: 'img/monster2.png', hp: 2, speed: 1.15, xp: 12, gold: 6, damage: 6, width: 42, height: 42, phase: 3 },
+    monster5: { img: 'img/monster5.png', hp: 2.25, speed: 0.63, xp: 18, gold: 10, damage: 10, width: 46, height: 46, phase: 3 },
+    monster8: { img: 'img/monster8.png', hp: 1.9, speed: 0.7, xp: 15, gold: 8, damage: 8, width: 40, height: 40, phase: 3 },
+    monster2b: { img: 'img/monster2.png', hp: 1.5, speed: 0.8, xp: 12, gold: 6, damage: 6, width: 42, height: 42, phase: 3 },
 
     // Bosses (slower)
-    miniBoss: { img: 'img/miniboss1.png', hp: 25, speed: 0.5, xp: 100, gold: 50, damage: 15, width: 70, height: 70, isBoss: true, isMiniBoss: true },
-    boss: { img: 'img/boss1.png', hp: 80, speed: 0.4, xp: 300, gold: 150, damage: 25, width: 90, height: 90, isBoss: true }
+    miniBoss: { img: 'img/miniboss1.png', hp: 18, speed: 0.35, xp: 100, gold: 50, damage: 15, width: 70, height: 70, isBoss: true, isMiniBoss: true },
+    boss: { img: 'img/boss1.png', hp: 60, speed: 0.28, xp: 300, gold: 150, damage: 25, width: 90, height: 90, isBoss: true }
 };
 
 const PHASES = {
@@ -106,8 +106,8 @@ const UPGRADES = [
         apply: (s) => s.fireRate *= 0.8, maxName: '🔥 Liên Hoàn', maxDesc: 'Bắn không ngừng!'
     },
     {
-        id: 'heal', icon: '💖', name: 'Hồi máu', desc: 'Hồi 30 HP', category: 'stat',
-        apply: (s) => s.knHealth = Math.min(s.knMaxHealth, s.knHealth + 30), maxName: '💖 Bất Tử', maxDesc: 'Hồi 50% HP!'
+        id: 'heal', icon: '💖', name: 'Hồi máu', desc: 'Hồi 15 HP', category: 'stat',
+        apply: (s) => s.knHealth = Math.min(s.knMaxHealth, s.knHealth + 15), maxName: '💖 Bất Tử', maxDesc: 'Hồi 50% HP!'
     },
     {
         id: 'multishot', icon: '🎯', name: 'Đa đạn', desc: '+1 đạn', category: 'stat',
@@ -382,18 +382,28 @@ function setupJoystick() {
 
 function setupFireButton() {
     const fireBtn = document.getElementById('fire-btn');
+    const autoFireBtn = document.getElementById('auto-fire-btn');
 
+    // Regular fire button
     fireBtn.addEventListener('touchstart', (e) => {
         e.preventDefault();
+        e.stopPropagation();
         firePressed = true;
         fireBtn.classList.add('pressed');
     }, { passive: false });
 
     fireBtn.addEventListener('touchend', (e) => {
         e.preventDefault();
-        firePressed = false;
+        e.stopPropagation();
+        if (!autoFire) firePressed = false;
         fireBtn.classList.remove('pressed');
     }, { passive: false });
+
+    fireBtn.addEventListener('touchcancel', (e) => {
+        e.stopPropagation();
+        if (!autoFire) firePressed = false;
+        fireBtn.classList.remove('pressed');
+    });
 
     fireBtn.addEventListener('mousedown', () => {
         firePressed = true;
@@ -401,14 +411,36 @@ function setupFireButton() {
     });
 
     fireBtn.addEventListener('mouseup', () => {
-        firePressed = false;
+        if (!autoFire) firePressed = false;
         fireBtn.classList.remove('pressed');
     });
 
     fireBtn.addEventListener('mouseleave', () => {
-        firePressed = false;
+        if (!autoFire) firePressed = false;
         fireBtn.classList.remove('pressed');
     });
+
+    // Auto-fire button (mobile only)
+    if (autoFireBtn) {
+        autoFireBtn.addEventListener('click', toggleAutoFire);
+        autoFireBtn.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+        }, { passive: false });
+    }
+}
+
+// Auto-fire state
+let autoFire = false;
+
+function toggleAutoFire() {
+    autoFire = !autoFire;
+    firePressed = autoFire;
+    const btn = document.getElementById('auto-fire-btn');
+    if (btn) {
+        btn.classList.toggle('active', autoFire);
+        btn.textContent = autoFire ? '🔴' : '🟢';
+    }
 }
 
 // ============================================
@@ -1359,15 +1391,15 @@ function updateSpecialWeapons(currentTime, width, height) {
             drone.y = player.y + Math.sin(drone.angle) * 40;
 
             // Fire at nearest enemy
-            if (currentTime - drone.lastFire > 800 && enemies.length > 0) {
+            if (currentTime - drone.lastFire > 500 && enemies.length > 0) {
                 const nearest = findNearestEnemy(drone);
                 if (nearest) {
                     const angle = Math.atan2(nearest.y - drone.y, nearest.x - drone.x);
                     bullets.push({
                         x: drone.x,
                         y: drone.y,
-                        vx: Math.cos(angle) * 6,
-                        vy: Math.sin(angle) * 6,
+                        vx: Math.cos(angle) * 8,
+                        vy: Math.sin(angle) * 8,
                         damage: 0.8 + stats.droneLevel * 0.2,
                         pierce: 1,
                         range: 200,
@@ -1404,7 +1436,7 @@ function updateSpecialWeapons(currentTime, width, height) {
     }
 
     // SHURIKENS - faster, pierce through enemies
-    if (stats.shurikenCount > 0 && currentTime - lastShurikenTime > 1200) { // 1.2s cooldown (faster)
+    if (stats.shurikenCount > 0 && currentTime - lastShurikenTime > 800) { // 0.8s cooldown (faster)
         const nearest = findNearestEnemy(player);
         if (nearest) {
             for (let i = 0; i < stats.shurikenCount; i++) {
@@ -1415,8 +1447,8 @@ function updateSpecialWeapons(currentTime, width, height) {
                 shurikens.push({
                     x: player.x,
                     y: player.y,
-                    vx: Math.cos(angle) * 8,
-                    vy: Math.sin(angle) * 8,
+                    vx: Math.cos(angle) * 10,
+                    vy: Math.sin(angle) * 10,
                     damage: 1.0, // Half of fireball
                     pierce: 3 + stats.shurikenCount, // Pierce through enemies
                     rotation: 0
@@ -1679,10 +1711,24 @@ function draw() {
         ctx.arc(gem.x, gem.y, gemSize * 2, 0, Math.PI * 2);
         ctx.fill();
 
-        // Gem
+        // Gem (Diamond shape)
         ctx.fillStyle = gem.value >= 2 ? '#e879f9' : '#a855f7';
         ctx.beginPath();
-        ctx.arc(gem.x, gem.y, gemSize, 0, Math.PI * 2);
+        ctx.moveTo(gem.x, gem.y - gemSize); // Top
+        ctx.lineTo(gem.x + gemSize, gem.y); // Right
+        ctx.lineTo(gem.x, gem.y + gemSize); // Bottom
+        ctx.lineTo(gem.x - gemSize, gem.y); // Left
+        ctx.closePath();
+        ctx.fill();
+
+        // Shine/Reflection on top part
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+        ctx.beginPath();
+        ctx.moveTo(gem.x, gem.y - gemSize);
+        ctx.lineTo(gem.x + gemSize * 0.5, gem.y - gemSize * 0.5);
+        ctx.lineTo(gem.x, gem.y);
+        ctx.lineTo(gem.x - gemSize * 0.5, gem.y - gemSize * 0.5);
+        ctx.closePath();
         ctx.fill();
 
         ctx.font = '10px Arial';
@@ -1691,13 +1737,13 @@ function draw() {
         ctx.fillText(`+${gem.value}`, gem.x, gem.y + 3);
     }
 
-    // Fireballs
+    // Fireballs (larger size)
     for (const fb of fireballs) {
         ctx.fillStyle = '#f97316';
         ctx.shadowColor = '#f97316';
-        ctx.shadowBlur = 10;
+        ctx.shadowBlur = 14;
         ctx.beginPath();
-        ctx.arc(fb.x, fb.y, 8, 0, Math.PI * 2);
+        ctx.arc(fb.x, fb.y, 11, 0, Math.PI * 2); // 40% larger
         ctx.fill();
         ctx.shadowBlur = 0;
     }
@@ -1777,65 +1823,93 @@ function draw() {
 }
 
 function drawArena(width, height) {
-    // Concrete floor background
-    ctx.fillStyle = '#1f2937'; // Dark gray concrete
+    // 1. Background (Off-road areas - clean dark slate)
+    ctx.fillStyle = '#111827';
     ctx.fillRect(0, 0, width, height);
 
-    // Grid lines (road-like markings)
-    ctx.strokeStyle = '#374151'; // Lighter gray for grid
-    ctx.lineWidth = 2;
-    ctx.setLineDash([]); // Solid lines for main grid
+    // Grid settings - Larger blocks for less clutter
+    const blockSize = 400;
+    const roadWidth = 120;
 
-    const gridSize = 100; // Big tiles/blocks
+    // 2. Draw Roads (Simplistic style)
+    // Draw all vertical roads
+    for (let x = blockSize / 2; x < width + blockSize; x += blockSize) {
+        // Road surface
+        ctx.fillStyle = '#374151';
+        ctx.fillRect(x - roadWidth / 2, 0, roadWidth, height);
 
-    // Vertical lines
-    const startX = Math.floor(-kn.x / gridSize) * gridSize; // Offset if we had camera, but here fixed
+        // Curb lines (Solid, distinct)
+        ctx.fillStyle = '#4b5563';
+        ctx.fillRect(x - roadWidth / 2 - 4, 0, 4, height); // Left curb
+        ctx.fillRect(x + roadWidth / 2, 0, 4, height);     // Right curb
 
-    for (let x = 0; x < width; x += gridSize) {
+        // Center line (Dashes, spaced out)
+        ctx.strokeStyle = '#fbbf24';
+        ctx.lineWidth = 2;
+        ctx.setLineDash([40, 40]); // Long dashes, long gaps
         ctx.beginPath();
         ctx.moveTo(x, 0);
         ctx.lineTo(x, height);
         ctx.stroke();
     }
 
-    // Horizontal lines (roads)
-    for (let y = 0; y < height; y += gridSize) {
-        // Draw main block lines
+    // Draw all horizontal roads
+    for (let y = blockSize / 2; y < height + blockSize; y += blockSize) {
+        // Road surface
+        ctx.fillStyle = '#374151';
+        ctx.fillRect(0, y - roadWidth / 2, width, roadWidth);
+
+        // Curb lines
+        ctx.fillStyle = '#4b5563';
+        ctx.fillRect(0, y - roadWidth / 2 - 4, width, 4); // Top curb
+        ctx.fillRect(0, y + roadWidth / 2, width, 4);     // Bottom curb
+
+        // Center line
+        ctx.strokeStyle = '#fbbf24';
+        ctx.lineWidth = 2;
+        ctx.setLineDash([40, 40]);
         ctx.beginPath();
         ctx.moveTo(0, y);
         ctx.lineTo(width, y);
         ctx.stroke();
+    }
 
-        // Add "road markings" in the middle of blocks
-        if (y + gridSize / 2 < height) {
-            ctx.save();
-            ctx.strokeStyle = '#4b5563';
-            ctx.setLineDash([15, 15]); // Dashed line
-            ctx.beginPath();
-            ctx.moveTo(0, y + gridSize / 2);
-            ctx.lineTo(width, y + gridSize / 2);
-            ctx.stroke();
-            ctx.restore();
+    ctx.setLineDash([]); // Reset dash
+
+    // 3. Intersections (Clean, no complex markings)
+    for (let x = blockSize / 2; x < width + blockSize; x += blockSize) {
+        for (let y = blockSize / 2; y < height + blockSize; y += blockSize) {
+            // Darker intersection patch
+            ctx.fillStyle = '#374151';
+            ctx.fillRect(x - roadWidth / 2, y - roadWidth / 2, roadWidth, roadWidth);
+
+            // Simple crosswalk (faded white stripes)
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
+            const stripeW = 20;
+            const stripeH = 8;
+
+            // Draw 4 crosswalks around center
+            // Horizontal stripes
+            /*
+            for (let s = -roadWidth/2 + 10; s < roadWidth/2 - 10; s += stripeW + 10) {
+                 // Top/Bottom
+                 ctx.fillRect(x + s, y - roadWidth/2 - 12, stripeW, 8);
+                 ctx.fillRect(x + s, y + roadWidth/2 + 4, stripeW, 8);
+            }
+            */
+            // Keeping it even simpler - just the road overlap cleans it up
         }
     }
 
-    // Add texture/noise effect (simple dots)
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.03)';
-    for (let i = 0; i < 50; i++) {
-        const tx = Math.random() * width;
-        const ty = Math.random() * height;
-        const ts = Math.random() * 3;
-        ctx.fillRect(tx, ty, ts, ts);
-    }
+    // 4. Subtle texture (Stars/Lights on ground?) - Minimal
+    // Removed noise loop for better performance
 
-    // Player range indicator
-    ctx.strokeStyle = 'rgba(251, 191, 36, 0.15)';
+    // Player range indicator (Clean circle)
+    ctx.strokeStyle = 'rgba(251, 191, 36, 0.1)';
     ctx.lineWidth = 1;
-    ctx.setLineDash([5, 5]);
     ctx.beginPath();
     ctx.arc(player.x, player.y, stats.bulletRange, 0, Math.PI * 2);
     ctx.stroke();
-    ctx.setLineDash([]);
 }
 
 function drawKhanhNhu() {

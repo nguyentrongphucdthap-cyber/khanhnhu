@@ -1208,3 +1208,33 @@ body {
         opacity: 1;
     }
 }
+
+/* Giftcode Card Style (Purple Theme) */
+.game-card.game-giftcode:hover {
+    border-color: #8b5cf6;
+    box-shadow: 0 10px 20px rgba(139, 92, 246, 0.15);
+}
+
+.game-card.game-giftcode .game-icon-wrapper {
+    background: #f5f3ff;
+    color: #8b5cf6;
+    font-size: 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.game-card.game-giftcode:hover .game-icon-wrapper {
+    background: #8b5cf6;
+    color: white;
+}
+
+.game-card.game-giftcode .play-hint {
+    background: #f5f3ff;
+    color: #7c3aed;
+}
+
+.game-card.game-giftcode:hover .play-hint {
+    background: #8b5cf6;
+    color: white;
+}

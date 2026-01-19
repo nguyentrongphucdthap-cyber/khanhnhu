@@ -447,7 +447,7 @@ function redeemCode() {
         if (hasRedeemed) {
             alert('⚠️ Bạn nhận quà đền bù này rồi mà! Đừng tham lam nha 😘');
         } else {
-            const reward = 200000; // 200k points
+            const reward = 250000; // 250k points
             const currentWallet = parseInt(localStorage.getItem(STORAGE_KEYS.WALLET) || 0);
             const newWallet = currentWallet + reward;
 
@@ -471,4 +471,18 @@ function redeemCode() {
 
 function closeJackpot() {
     document.getElementById('jackpot-overlay').classList.add('hidden');
+}
+
+function revealAllCards() {
+    const cards = document.querySelectorAll('.flip-card:not(.flipped)');
+    if (cards.length === 0) return;
+
+    cards.forEach((card, index) => {
+        setTimeout(() => {
+            card.click();
+        }, index * 100);
+    });
+
+    const btn = document.getElementById('reveal-all-btn');
+    if (btn) btn.classList.add('hidden');
 }

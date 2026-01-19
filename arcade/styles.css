@@ -1098,3 +1098,113 @@ body {
         transform: translateY(0) scale(1) rotate(0deg);
     }
 }
+
+/* JACKPOT OVERLAY */
+.jackpot-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.9);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: fadeIn 0.5s;
+}
+
+.jackpot-overlay.hidden {
+    display: none;
+}
+
+.jackpot-content {
+    text-align: center;
+    position: relative;
+    z-index: 10;
+}
+
+.sunburst {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 600px;
+    height: 600px;
+    background: repeating-conic-gradient(from 0deg,
+            rgba(251, 191, 36, 0.4) 0deg 20deg,
+            transparent 20deg 40deg);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    animation: rotateSlow 20s linear infinite;
+    z-index: -1;
+    pointer-events: none;
+}
+
+.jackpot-img {
+    width: 250px;
+    height: 250px;
+    object-fit: contain;
+    filter: drop-shadow(0 0 30px rgba(251, 191, 36, 0.8));
+    animation: popIn 1s cubic-bezier(0.68, -0.55, 0.27, 1.55), float 3s ease-in-out infinite;
+}
+
+.jackpot-title {
+    font-size: 3rem;
+    font-weight: 900;
+    color: transparent;
+    background: linear-gradient(to right, #fcd34d, #f59e0b, #fff, #f59e0b);
+    background-size: 200%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    animation: shineText 3s linear infinite;
+    margin: 20px 0 10px;
+    text-shadow: 0 0 20px rgba(245, 158, 11, 0.5);
+}
+
+.jackpot-msg {
+    color: white;
+    font-size: 1.5rem;
+    line-height: 1.6;
+}
+
+@keyframes rotateSlow {
+    from {
+        transform: translate(-50%, -50%) rotate(0deg);
+    }
+
+    to {
+        transform: translate(-50%, -50%) rotate(360deg);
+    }
+}
+
+@keyframes shineText {
+    0% {
+        background-position: 200% center;
+    }
+
+    100% {
+        background-position: 0% center;
+    }
+}
+
+@keyframes float {
+
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-20px);
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}

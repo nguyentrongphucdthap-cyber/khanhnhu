@@ -1121,11 +1121,16 @@ function spawnEnemy(width, height) {
         currentPhase = 3;       // 4+ minutes
     }
 
-    // Difficulty Scaling
-    const minutes = stats.gameTime / 60;
-    const hpMultiplier = 1 + (minutes * 0.5); // +50% HP per minute
+    // Difficulty Scaling (New logic)
+    // HP: +2% every 5 seconds
+    const intervals = stats.gameTime / 5;
+    const hpMultiplier = 1 + (intervals * 0.02);
+
+    // Speed: +0.25% every 5 seconds, capped at +60% (1.6x)
+    const speedMultiplier = Math.min(1.6, 1 + (intervals * 0.0025));
 
     // Increase mob cap: +15 enemies per minute
+    const minutes = stats.gameTime / 60;
     const dynamicMaxEnemies = CONFIG.MAX_ENEMIES + Math.floor(minutes * 15);
 
     // Stop if limit reached
@@ -1184,7 +1189,7 @@ function spawnEnemy(width, height) {
             imgKey: type,
             hp: template.hp * hpMultiplier,
             maxHp: template.hp * hpMultiplier,
-            speed: template.speed * (1 + stats.gameTime / 300),
+            speed: template.speed * speedMultiplier,
             xp: template.xp,
             gold: template.gold,
             damage: template.damage,

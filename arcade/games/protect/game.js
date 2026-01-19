@@ -2035,5 +2035,24 @@ function updateUI() {
     }
 }
 
+// Exit game early and save progress
+function exitGame() {
+    gameRunning = false;
+    SoundManager.stopBGM();
+
+    // Save points
+    const currentWallet = parseInt(localStorage.getItem('arcade_wallet_points') || 0);
+    localStorage.setItem('arcade_wallet_points', currentWallet + Math.floor(stats.score));
+
+    // Check highscore
+    const highScore = parseInt(localStorage.getItem('arcade_protect_highscore') || 0);
+    if (stats.score > highScore) {
+        localStorage.setItem('arcade_protect_highscore', Math.floor(stats.score));
+    }
+
+    // Go back
+    window.location.href = '../../index.html';
+}
+
 // Start
 init();

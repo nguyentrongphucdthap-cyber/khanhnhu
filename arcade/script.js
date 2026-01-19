@@ -348,6 +348,17 @@ function rollGuaranteedItem() {
 }
 
 function rollItem() {
+    // Check Pity for Mug (ID '5')
+    const totalSpins = parseInt(localStorage.getItem(STORAGE_KEYS.TOTAL_SPINS) || 0);
+    const inventory = JSON.parse(localStorage.getItem('arcade_inventory') || '[]');
+    const hasMug = inventory.includes('5');
+
+    if (totalSpins >= 1000 && !hasMug) {
+        inventory.push('5');
+        localStorage.setItem('arcade_inventory', JSON.stringify(inventory));
+        return { type: 'new', item: GACHA_ITEMS.find(i => i.id === '5') };
+    }
+
     let selected = null;
     const roll = Math.random();
 
@@ -481,6 +492,22 @@ function redeemCode() {
             document.getElementById('user-points-display').textContent = formatNumber(newWallet);
             document.getElementById('total-highscore').textContent = formatNumber(newWallet);
 
+            closeCodeModal();
+        }
+    } else if (code === 'khanhnhu') {
+        if (localStorage.getItem('arcade_redeemed_code_khanhnhu')) {
+            alert('⚠️ Code này nhập rồi nha!');
+        } else {
+            const reward = 13480;
+            const newWallet = (parseInt(localStorage.getItem(STORAGE_KEYS.WALLET) || 0)) + reward;
+            localStorage.setItem(STORAGE_KEYS.WALLET, newWallet);
+            localStorage.setItem('arcade_redeemed_code_khanhnhu', 'true');
+
+            alert(`❤️ Code Tình Yêu!\n+${formatNumber(reward)} điểm cho bé yêu!`);
+
+            const pDisplay = document.getElementById('user-points-display');
+            if (pDisplay) pDisplay.textContent = formatNumber(newWallet);
+            document.getElementById('total-highscore').textContent = formatNumber(newWallet);
             closeCodeModal();
         }
     } else {

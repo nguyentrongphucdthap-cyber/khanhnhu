@@ -437,6 +437,83 @@ body {
     margin-top: 3px;
 }
 
+/* Weapon upgrade styling */
+.upgrade-btn.weapon-upgrade {
+    background: linear-gradient(135deg, rgba(96, 165, 250, 0.15), rgba(59, 130, 246, 0.15));
+    border-color: #60a5fa;
+}
+
+.upgrade-btn.weapon-upgrade .upgrade-name {
+    color: #60a5fa;
+}
+
+/* Reroll Button */
+.reroll-btn {
+    width: 100%;
+    padding: 10px 16px;
+    margin-top: 8px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 2px dashed rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    color: rgba(255, 255, 255, 0.7);
+    font-family: inherit;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.reroll-btn:hover:not(.disabled) {
+    background: rgba(251, 191, 36, 0.1);
+    border-color: #fbbf24;
+    color: #fbbf24;
+}
+
+.reroll-btn.disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+/* Agent Upgrade UI */
+.agent-item.owned {
+    background: rgba(96, 165, 250, 0.1);
+    border-color: rgba(96, 165, 250, 0.3);
+}
+
+.agent-lvl {
+    font-size: 0.65rem;
+    background: linear-gradient(135deg, #fbbf24, #f59e0b);
+    color: #1e1b4b;
+    padding: 1px 5px;
+    border-radius: 4px;
+    margin-left: 4px;
+}
+
+.upgrade-agent-btn {
+    padding: 6px 10px;
+    background: linear-gradient(135deg, #60a5fa, #3b82f6);
+    border: none;
+    border-radius: 6px;
+    color: #fff;
+    font-weight: 600;
+    font-size: 0.75rem;
+    cursor: pointer;
+}
+
+.upgrade-agent-btn:disabled {
+    background: #374151;
+    color: #6b7280;
+    cursor: not-allowed;
+}
+
+.max-badge {
+    padding: 6px 10px;
+    background: linear-gradient(135deg, #22c55e, #16a34a);
+    border-radius: 6px;
+    color: #fff;
+    font-weight: 700;
+    font-size: 0.7rem;
+}
+
 /* Joystick */
 .joystick-container {
     position: fixed;

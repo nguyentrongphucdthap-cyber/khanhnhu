@@ -140,15 +140,22 @@ function openGacha(e) {
     const currentWallet = getTotalPoints();
     document.getElementById('user-points-display').textContent = formatNumber(currentWallet);
 
+    // Update spins count explicitly
+    const spinDisplay = document.getElementById('total-spins-display');
+    const totalSpins = parseInt(localStorage.getItem(STORAGE_KEYS.TOTAL_SPINS) || 0);
+    if (spinDisplay) spinDisplay.textContent = formatNumber(totalSpins);
+
     // Render Collection
     renderCollection();
 
-    // Reset view
-    document.getElementById('gacha-box').classList.remove('hidden');
-    const single = document.getElementById('gacha-result-container');
-    const multi = document.getElementById('gacha-multi-result');
-    if (single) single.classList.add('hidden');
-    if (multi) multi.classList.add('hidden');
+    // Reset view (Stage)
+    const stage = document.getElementById('gacha-stage');
+    if (stage) {
+        stage.innerHTML = '<div class="placeholder-text">Nhấn quay để bắt đầu!</div>';
+    }
+
+    // Ensure styles are reset
+    document.querySelector('.gacha-display').classList.remove('burst');
 
     document.getElementById('gacha-modal').classList.remove('hidden');
 }

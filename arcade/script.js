@@ -274,17 +274,25 @@ function createCardElement(result, isSingle, index) {
     wrapper.appendChild(inner);
 
     // FLIP LOGIC
-    wrapper.addEventListener('click', () => {
+    const flipAction = () => {
         if (!wrapper.classList.contains('flipped')) {
             wrapper.classList.add('flipped');
+
+            // JACKPOT TRIGGER (ID '5')
+            if (result.item && result.item.id === '5') {
+                setTimeout(() => {
+                    const overlay = document.getElementById('jackpot-overlay');
+                    if (overlay) overlay.classList.remove('hidden');
+                }, 800);
+            }
         }
-    });
+    };
+
+    wrapper.addEventListener('click', flipAction);
 
     // Auto flip for single spin
     if (isSingle) {
-        setTimeout(() => {
-            wrapper.classList.add('flipped');
-        }, 600);
+        setTimeout(flipAction, 600);
     }
 
     return wrapper;
@@ -452,4 +460,8 @@ function redeemCode() {
     }
 
     input.value = '';
+}
+
+function closeJackpot() {
+    document.getElementById('jackpot-overlay').classList.add('hidden');
 }

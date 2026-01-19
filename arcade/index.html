@@ -183,8 +183,23 @@
 
     <!-- Footer -->
     <footer class="footer">
-        <p>made with 💖 for Khánh Như</p>
+        <p>made with 💖 for Khánh Như | <button onclick="openCodeModal()" class="code-btn">🎁 Code</button></p>
     </footer>
+
+    <!-- Code Modal -->
+    <div id="code-modal" class="gacha-overlay hidden">
+        <div class="gacha-card" style="max-width: 320px; min-height: auto; height: auto;">
+            <div class="gacha-header">
+                <h2>🎟️ Nhập Giftcode</h2>
+                <button class="gacha-close" onclick="closeCodeModal()">✕</button>
+            </div>
+            <div style="padding: 20px; display: flex; flex-direction: column; gap: 10px;">
+                <input type="text" id="giftcode-input" placeholder="Nhập mã code..."
+                    style="padding: 10px; border-radius: 8px; border: 1px solid #ccc; width: 100%; font-size: 1rem;">
+                <button onclick="redeemCode()" class="spin-btn">Xác nhận</button>
+            </div>
+        </div>
+    </div>
 
     <!-- Gacha Modal -->
     <div id="gacha-modal" class="gacha-overlay hidden">
@@ -196,10 +211,11 @@
 
             <div class="points-badge">
                 💎 Điểm khả dụng: <span id="user-points-display">0</span>
+                <div class="spin-counter-badge">Đã quay: <span id="total-spins-display">0</span> lần</div>
             </div>
 
             <div class="gacha-display">
-                <div id="gacha-box" class="gacha-box">❓</div>
+                <div id="gacha-box" class="gacha-box">🎁</div>
                 <!-- Single Config Result -->
                 <div id="gacha-result-container" class="gacha-result-container hidden">
                     <img id="gacha-reward-img" src="" class="gacha-reward-img">

@@ -13,14 +13,16 @@ const STORAGE_KEYS = {
 
 // Initialize arcade
 document.addEventListener('DOMContentLoaded', () => {
-    // Migrate Logic: If wallet doesn't exist, create it from legacy formula
-    if (localStorage.getItem(STORAGE_KEYS.WALLET) === null) {
+    // Migrate Logic or Fix Corruption
+    let wallet = localStorage.getItem(STORAGE_KEYS.WALLET);
+    if (wallet === null || wallet === 'NaN' || isNaN(parseInt(wallet))) {
         const dino = parseInt(localStorage.getItem(STORAGE_KEYS.DINO_HIGHSCORE) || 0);
         const catchG = parseInt(localStorage.getItem(STORAGE_KEYS.CATCH_HIGHSCORE) || 0);
         const whack = parseInt(localStorage.getItem(STORAGE_KEYS.WHACK_HIGHSCORE) || 0);
         const protect = parseInt(localStorage.getItem(STORAGE_KEYS.PROTECT_HIGHSCORE) || 0);
         const spent = parseInt(localStorage.getItem('arcade_spent_points') || 0);
 
+        // Recalculate safe value
         const initialWallet = Math.max(0, (dino + catchG + whack + protect) - spent);
         localStorage.setItem(STORAGE_KEYS.WALLET, initialWallet);
     }

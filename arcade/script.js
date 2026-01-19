@@ -503,7 +503,7 @@ function redeemCode() {
             localStorage.setItem(STORAGE_KEYS.WALLET, newWallet);
             localStorage.setItem('arcade_redeemed_code_khanhnhu', 'true');
 
-            alert(`❤️ Code Tình Yêu!\n+${formatNumber(reward)} điểm cho bé yêu!`);
+            alert(`🎉 THÀNH CÔNG!\nBạn đã nhận được ${formatNumber(reward)} điểm.`);
 
             const pDisplay = document.getElementById('user-points-display');
             if (pDisplay) pDisplay.textContent = formatNumber(newWallet);

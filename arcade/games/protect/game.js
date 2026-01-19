@@ -1887,22 +1887,8 @@ function drawArena(width, height) {
             ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
             const stripeW = 20;
             const stripeH = 8;
-
-            // Draw 4 crosswalks around center
-            // Horizontal stripes
-            /*
-            for (let s = -roadWidth/2 + 10; s < roadWidth/2 - 10; s += stripeW + 10) {
-                 // Top/Bottom
-                 ctx.fillRect(x + s, y - roadWidth/2 - 12, stripeW, 8);
-                 ctx.fillRect(x + s, y + roadWidth/2 + 4, stripeW, 8);
-            }
-            */
-            // Keeping it even simpler - just the road overlap cleans it up
         }
     }
-
-    // 4. Subtle texture (Stars/Lights on ground?) - Minimal
-    // Removed noise loop for better performance
 
     // Player range indicator (Clean circle)
     ctx.strokeStyle = 'rgba(251, 191, 36, 0.1)';

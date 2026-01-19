@@ -221,9 +221,13 @@ function loadImages() {
         { key: 'player', src: 'img/main.png' },
         { key: 'monster1', src: 'img/monster.png' },
         { key: 'monster2', src: 'img/monster2.png' },
+        { key: 'monster2b', src: 'img/monster2.png' }, // Reuse monster2 for phase 3 variant
         { key: 'monster3', src: 'img/monster3.png' },
         { key: 'monster4', src: 'img/monster4.png' },
         { key: 'monster5', src: 'img/monster5.png' },
+        { key: 'monster6', src: 'img/monster6.png' },
+        { key: 'monster7', src: 'img/monster7.png' },
+        { key: 'monster8', src: 'img/monster8.png' },
         { key: 'miniBoss', src: 'img/miniboss1.png' },
         { key: 'boss', src: 'img/boss1.png' },
         { key: 'khanhnhu', src: 'img/khanhnhu.png' }

@@ -7,7 +7,8 @@ const STORAGE_KEYS = {
     WHACK_HIGHSCORE: 'arcade_whack_highscore',
     PROTECT_HIGHSCORE: 'arcade_protect_highscore',
     GAMES_PLAYED: 'arcade_games_played',
-    WALLET: 'arcade_wallet_points'
+    WALLET: 'arcade_wallet_points',
+    TOTAL_SPINS: 'arcade_total_spins'
 };
 
 // Initialize arcade
@@ -57,11 +58,18 @@ function loadHighscores() {
 function loadStats() {
     const gamesPlayed = localStorage.getItem(STORAGE_KEYS.GAMES_PLAYED) || 0;
     document.getElementById('games-played').textContent = formatNumber(gamesPlayed);
+
+    // Gacha spins
+    const spins = localStorage.getItem(STORAGE_KEYS.TOTAL_SPINS) || 0;
+    const spinDisplay = document.getElementById('total-spins-display');
+    if (spinDisplay) spinDisplay.textContent = formatNumber(spins);
 }
 
 // Format number with comma separators
 function formatNumber(num) {
-    return parseInt(num).toLocaleString('vi-VN');
+    const n = parseInt(num);
+    if (isNaN(n)) return "0";
+    return n.toLocaleString('vi-VN');
 }
 
 // Setup card hover interactions
@@ -166,9 +174,16 @@ function spinGacha(count = 1) {
     const newWallet = currentWallet - cost;
     localStorage.setItem(STORAGE_KEYS.WALLET, newWallet);
 
+    // Increment Total Spins
+    let totalSpins = parseInt(localStorage.getItem(STORAGE_KEYS.TOTAL_SPINS) || 0);
+    totalSpins += count;
+    localStorage.setItem(STORAGE_KEYS.TOTAL_SPINS, totalSpins);
+
     // Update UI
     document.getElementById('user-points-display').textContent = formatNumber(newWallet);
     document.getElementById('total-highscore').textContent = formatNumber(newWallet);
+    const spinDisplay = document.getElementById('total-spins-display');
+    if (spinDisplay) spinDisplay.textContent = formatNumber(totalSpins);
 
     // Disable buttons
     const btns = document.querySelectorAll('.spin-btn');
@@ -179,6 +194,7 @@ function spinGacha(count = 1) {
 
     // Animation
     const box = document.getElementById('gacha-box');
+    const display = document.querySelector('.gacha-display');
     const singleContainer = document.getElementById('gacha-result-container');
     const multiContainer = document.getElementById('gacha-multi-result');
 
@@ -186,13 +202,15 @@ function spinGacha(count = 1) {
     if (multiContainer) multiContainer.classList.add('hidden');
 
     box.classList.remove('hidden');
-    box.style.animation = 'bounce 0.5s infinite';
+    box.className = 'gacha-box shaking'; // Shaking effect
+    display.classList.remove('burst');
+
     document.getElementById('gacha-result-container').classList.add('hidden');
 
     setTimeout(() => {
         // Result logic
-        box.style.animation = '';
-        box.classList.add('hidden');
+        box.className = 'gacha-box hidden'; // Hide box
+        display.classList.add('burst'); // Burst effect
 
         // Loop Roll Items
         const results = [];
@@ -341,4 +359,49 @@ function renderCollection() {
         }
         grid.appendChild(el);
     });
+}
+
+// ==========================================
+// GIFTCODE SYSTEM
+// ==========================================
+
+function openCodeModal() {
+    document.getElementById('code-modal').classList.remove('hidden');
+}
+
+function closeCodeModal() {
+    document.getElementById('code-modal').classList.add('hidden');
+}
+
+function redeemCode() {
+    const input = document.getElementById('giftcode-input');
+    const code = input.value.trim().toLowerCase();
+
+    if (!code) return;
+
+    if (code === 'denbu') {
+        const hasRedeemed = localStorage.getItem('arcade_redeemed_code_denbu');
+        if (hasRedeemed) {
+            alert('⚠️ Bạn nhận quà đền bù này rồi mà! Đừng tham lam nha 😘');
+        } else {
+            const reward = 200000; // 200k points
+            const currentWallet = parseInt(localStorage.getItem(STORAGE_KEYS.WALLET) || 0);
+            const newWallet = currentWallet + reward;
+
+            localStorage.setItem(STORAGE_KEYS.WALLET, newWallet);
+            localStorage.setItem('arcade_redeemed_code_denbu', 'true');
+
+            alert(`🎉 THÀNH CÔNG!\nBạn đã nhận được ${formatNumber(reward)} điểm đền bù.\nChúc bạn chơi vui vẻ!`);
+
+            // Update UI
+            document.getElementById('user-points-display').textContent = formatNumber(newWallet);
+            document.getElementById('total-highscore').textContent = formatNumber(newWallet);
+
+            closeCodeModal();
+        }
+    } else {
+        alert('❌ Mã code không đúng hoặc đã hết hạn.');
+    }
+
+    input.value = '';
 }

@@ -44,6 +44,11 @@ body {
     pointer-events: auto;
 }
 
+.header-right {
+    display: flex;
+    gap: 10px;
+}
+
 .back-btn {
     width: 40px;
     height: 40px;
@@ -736,13 +741,7 @@ body {
         font-size: 0.5rem;
     }
 
-    .shop-toggle-btn {
-        width: 32px;
-        height: 32px;
-        font-size: 0.9rem;
-        top: 4px;
-        right: 4px;
-    }
+
 
     .kn-health-container {
         bottom: 4px;

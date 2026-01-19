@@ -298,6 +298,16 @@ function init() {
     // Shop button
     document.getElementById('shop-btn').addEventListener('click', toggleShop);
     document.getElementById('close-shop').addEventListener('click', toggleShop);
+
+    // Volume button
+    const volBtn = document.getElementById('volume-btn');
+    if (volBtn) {
+        volBtn.addEventListener('click', () => {
+            const isMuted = SoundManager.toggleMute();
+            volBtn.textContent = isMuted ? '🔇' : '🔊';
+            volBtn.style.opacity = isMuted ? '0.5' : '1';
+        });
+    }
 }
 
 function resizeCanvas() {

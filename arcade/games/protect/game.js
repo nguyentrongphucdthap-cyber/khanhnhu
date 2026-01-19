@@ -432,10 +432,19 @@ function setupFireButton() {
 
     // Auto-fire button (mobile only)
     if (autoFireBtn) {
+        // Handle desktop click
         autoFireBtn.addEventListener('click', toggleAutoFire);
+
+        // Handle mobile touch
         autoFireBtn.addEventListener('touchstart', (e) => {
+            e.preventDefault(); // Prevent scroll/zoom
+            e.stopPropagation();
+        }, { passive: false });
+
+        autoFireBtn.addEventListener('touchend', (e) => {
             e.preventDefault();
             e.stopPropagation();
+            toggleAutoFire();
         }, { passive: false });
     }
 }

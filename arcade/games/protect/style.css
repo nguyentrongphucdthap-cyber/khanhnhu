@@ -548,6 +548,10 @@ body {
     bottom: 25px;
     right: 25px;
     z-index: 200;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    align-items: center;
 }
 
 .fire-btn {
@@ -567,6 +571,25 @@ body {
 .fire-btn:active,
 .fire-btn.pressed {
     transform: scale(0.88);
+}
+
+.auto-fire-btn {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    background: rgba(30, 30, 50, 0.8);
+    font-size: 1.5rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+}
+
+.auto-fire-btn.active {
+    background: rgba(239, 68, 68, 0.3);
+    border-color: #ef4444;
+    box-shadow: 0 0 15px rgba(239, 68, 68, 0.5);
 }
 
 .new-highscore {

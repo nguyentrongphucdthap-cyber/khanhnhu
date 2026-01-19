@@ -1238,3 +1238,57 @@ body {
     background: #8b5cf6;
     color: white;
 }
+
+/* Mobile Optimization for Gacha Cards */
+@media (max-width: 600px) {
+    .gacha-display {
+        height: auto;
+        min-height: 250px;
+        max-height: 55vh;
+        overflow: hidden;
+    }
+
+    .gacha-stage {
+        padding: 5px;
+        align-items: flex-start;
+        justify-content: center;
+        overflow-y: auto;
+        max-height: 55vh;
+        align-content: flex-start;
+    }
+
+    /* Hide scrollbar */
+    .gacha-stage::-webkit-scrollbar {
+        width: 4px;
+    }
+
+    .gacha-stage::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 4px;
+    }
+
+    .flip-card {
+        width: 85px;
+        height: 120px;
+    }
+
+    .flip-card.single {
+        width: 140px;
+        height: 200px;
+        margin: 20px auto;
+    }
+
+    .card-reward-name {
+        font-size: 0.6rem;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .multi-spin-row .spin-btn {
+        padding: 12px 2px;
+        font-size: 0.85rem;
+    }
+}

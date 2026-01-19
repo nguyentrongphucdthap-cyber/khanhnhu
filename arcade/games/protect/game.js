@@ -241,27 +241,25 @@ function resizeCanvas() {
     const rect = canvas.getBoundingClientRect();
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
 
-    // Mobile scaling: 70% zoom to see more of the map
-    const isMobile = window.innerWidth < 768; // Simple check for mobile width
-    const scaleFactor = isMobile ? 0.7 : 1;
+    // Store DPR for later use
+    canvas.dpr = dpr;
 
+    // Set canvas pixel dimensions
     canvas.width = rect.width * dpr;
     canvas.height = rect.height * dpr;
 
-    // Scale context: include DPR and the zoom-out factor
-    ctx.setTransform(1, 0, 0, 1, 0, 0); // Reset transform
-    ctx.scale(dpr * scaleFactor, dpr * scaleFactor);
+    // Store logical dimensions (CSS pixels)
+    canvas.logicalWidth = rect.width;
+    canvas.logicalHeight = rect.height;
 
-    // Logical width is larger when scaled down (zoomed out)
-    canvas.logicalWidth = rect.width / scaleFactor;
-    canvas.logicalHeight = rect.height / scaleFactor;
+    // Apply DPR scaling
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-    // Recenter entities based on new logical dimensions
+    // Recenter entities based on logical dimensions
     kn.x = canvas.logicalWidth / 2;
     kn.y = canvas.logicalHeight / 2;
 
-    // Update player relative to new center if needed
-    // Only reset if it seems to be initialization or resize causing misalignment
+    // Only reset player position if game not running
     if (!gameRunning) {
         player.x = kn.x;
         player.y = kn.y + 60;
@@ -481,7 +479,6 @@ function gameOver() {
     }
 
     document.getElementById('final-score').textContent = 'Điểm: ' + stats.score;
-    document.getElementById('final-xp').textContent = Math.floor(stats.xp);
     document.getElementById('final-stats').textContent =
         `Thời gian: ${formatTime(stats.gameTime)} | Cấp: ${stats.level} | Vàng: ${stats.gold}`;
     document.getElementById('highscore-message').innerHTML = isNewHighscore
@@ -652,8 +649,14 @@ function gameLoop(currentTime) {
 }
 
 function update(currentTime) {
-    const width = canvas.logicalWidth;
-    const height = canvas.logicalHeight;
+    const width = canvas.logicalWidth || 400;
+    const height = canvas.logicalHeight || 600;
+
+    // Safety check - ensure dimensions are valid
+    if (!width || !height || isNaN(width) || isNaN(height)) {
+        console.warn('Invalid canvas dimensions, skipping update');
+        return;
+    }
 
     stats.gameTime = (currentTime - gameStartTime) / 1000;
 
@@ -1029,7 +1032,10 @@ function createParticles(x, y, color, count) {
 function draw() {
     const width = canvas.logicalWidth;
     const height = canvas.logicalHeight;
+    const dpr = canvas.dpr || 1;
 
+    // Reset and reapply DPR transform before each frame
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.clearRect(0, 0, width, height);
 
     drawArena(width, height);

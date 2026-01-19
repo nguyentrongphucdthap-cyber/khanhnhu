@@ -2003,5 +2003,30 @@ function drawPlayer() {
     }
 }
 
+// Update UI Elements
+function updateUI() {
+    // Score & Gold
+    const scoreEl = document.getElementById('score');
+    if (scoreEl) scoreEl.textContent = Math.floor(stats.score);
+
+    const goldEl = document.getElementById('gold');
+    if (goldEl) goldEl.textContent = Math.floor(stats.gold);
+
+    // Timer
+    const timerEl = document.getElementById('timer');
+    if (timerEl) timerEl.textContent = formatTime(stats.gameTime);
+
+    // Level
+    const levelEl = document.getElementById('level');
+    if (levelEl) levelEl.textContent = stats.level;
+
+    // XP Bar (New integrated)
+    const xpPercent = stats.xpNeeded > 0 ? (stats.xp / stats.xpNeeded) * 100 : 0;
+    const xpBar = document.getElementById('xp-bar');
+    if (xpBar) {
+        xpBar.style.width = `${Math.min(100, xpPercent)}%`;
+    }
+}
+
 // Start
 init();

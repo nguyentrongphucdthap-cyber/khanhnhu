@@ -1,0 +1,528 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML>
+
+<HEAD>
+  <TITLE> MINH IT </TITLE>
+  <META NAME="Generator" CONTENT="EditPlus">
+  <META NAME="Author" CONTENT="">
+  <META NAME="Keywords" CONTENT="">
+  <META NAME="Description" CONTENT="">
+  <link rel="stylesheet" href="style.css">
+  <style>
+    html,
+    body {
+      height: 100%;
+      padding: 0;
+      margin: 0;
+      background: rgba(0, 0, 0, 0.851);
+    }
+
+    canvas {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+    }
+  </style>
+</HEAD>
+
+<BODY>
+  <div class="box">
+    <canvas id="pinkboard"></canvas>
+  </div>
+  <script>
+    var settings = {
+      particles: {
+        length: 10000, // maximum amount of particles
+        duration: 4, // particle duration in sec
+        velocity: 80, // particle velocity in pixels/sec
+        effect: -1.3, // play with this for a nice effect
+        size: 8, // particle size in pixels
+      },
+      mouse: {
+        radius: 100,   // repulsion radius in pixels
+        force: 500,    // repulsion force strength
+      },
+    };
+
+    // Global mouse position tracker
+    var mouse = { x: -9999, y: -9999, active: false };
+    /*
+     */
+    (function () { var b = 0; var c = ["ms", "moz", "webkit", "o"]; for (var a = 0; a < c.length && !window.requestAnimationFrame; ++a) { window.requestAnimationFrame = window[c[a] + "RequestAnimationFrame"]; window.cancelAnimationFrame = window[c[a] + "CancelAnimationFrame"] || window[c[a] + "CancelRequestAnimationFrame"] } if (!window.requestAnimationFrame) { window.requestAnimationFrame = function (h, e) { var d = new Date().getTime(); var f = Math.max(0, 16 - (d - b)); var g = window.setTimeout(function () { h(d + f) }, f); b = d + f; return g } } if (!window.cancelAnimationFrame) { window.cancelAnimationFrame = function (d) { clearTimeout(d) } } }());
+    /*
+     * Point class
+     */
+    var Point = (function () {
+      function Point(x, y) {
+        this.x = (typeof x !== 'undefined') ? x : 0;
+        this.y = (typeof y !== 'undefined') ? y : 0;
+      }
+      Point.prototype.clone = function () {
+        return new Point(this.x, this.y);
+      };
+      Point.prototype.length = function (length) {
+        if (typeof length == 'undefined')
+          return Math.sqrt(this.x * this.x + this.y * this.y);
+        this.normalize();
+        this.x *= length;
+        this.y *= length;
+        return this;
+      };
+      Point.prototype.normalize = function () {
+        var length = this.length();
+        this.x /= length;
+        this.y /= length;
+        return this;
+      };
+      return Point;
+    })();
+    /*
+     * Particle class
+     */
+    // Pre-computed mouse constants (updated when settings change)
+    var mouseRadiusSq = settings.mouse.radius * settings.mouse.radius;
+    var mouseInvRadius = 1 / settings.mouse.radius;
+
+    var Particle = (function () {
+      function Particle() {
+        this.position = new Point();
+        this.velocity = new Point();
+        this.acceleration = new Point();
+        this.age = 0;
+        this._mouseProximity = 0; // cached: 0 = not near mouse, >0 = proximity factor
+      }
+      Particle.prototype.initialize = function (x, y, dx, dy) {
+        this.position.x = x;
+        this.position.y = y;
+        this.velocity.x = dx;
+        this.velocity.y = dy;
+        this.acceleration.x = dx * settings.particles.effect;
+        this.acceleration.y = dy * settings.particles.effect;
+        this.age = 0;
+        this._mouseProximity = 0;
+      };
+      Particle.prototype.update = function (deltaTime) {
+        // Mouse repulsion — uses squared distance to avoid sqrt
+        this._mouseProximity = 0;
+        if (mouse.active) {
+          var dx = this.position.x - mouse.x;
+          var dy = this.position.y - mouse.y;
+          var distSq = dx * dx + dy * dy;
+          if (distSq < mouseRadiusSq && distSq > 1) {
+            // Fast approximate inverse sqrt: 1/sqrt(distSq)
+            var invDist = 1 / Math.sqrt(distSq);
+            var dist = distSq * invDist; // = sqrt(distSq) without extra sqrt call
+            var proximity = 1 - dist * mouseInvRadius;
+            this._mouseProximity = proximity;
+            var factor = proximity * settings.mouse.force * deltaTime;
+            this.velocity.x += dx * invDist * factor;
+            this.velocity.y += dy * invDist * factor;
+          }
+        }
+        this.position.x += this.velocity.x * deltaTime;
+        this.position.y += this.velocity.y * deltaTime;
+        this.velocity.x += this.acceleration.x * deltaTime;
+        this.velocity.y += this.acceleration.y * deltaTime;
+        this.age += deltaTime;
+      };
+      Particle.prototype.draw = function (context, image) {
+        function ease(t) {
+          return (--t) * t * t + 1;
+        }
+        var size = image.width * ease(this.age / settings.particles.duration);
+        var baseAlpha = 1 - this.age / settings.particles.duration;
+
+        // Lightweight glow: reuse cached proximity from update(), no shadowBlur
+        var p = this._mouseProximity;
+        if (p > 0) {
+          size *= (1 + p * 0.5);
+          baseAlpha = baseAlpha + p * 0.3;
+          if (baseAlpha > 1) baseAlpha = 1;
+        }
+
+        context.globalAlpha = baseAlpha;
+        context.drawImage(image, this.position.x - size / 2, this.position.y - size / 2, size, size);
+      };
+      return Particle;
+    })();
+    /*
+     * ParticlePool class
+     */
+    var ParticlePool = (function () {
+      var particles,
+        firstActive = 0,
+        firstFree = 0,
+        duration = settings.particles.duration;
+
+      function ParticlePool(length) {
+        // create and populate particle pool
+        particles = new Array(length);
+        for (var i = 0; i < particles.length; i++)
+          particles[i] = new Particle();
+      }
+      ParticlePool.prototype.add = function (x, y, dx, dy) {
+        particles[firstFree].initialize(x, y, dx, dy);
+
+        // handle circular queue
+        firstFree++;
+        if (firstFree == particles.length) firstFree = 0;
+        if (firstActive == firstFree) firstActive++;
+        if (firstActive == particles.length) firstActive = 0;
+      };
+      ParticlePool.prototype.update = function (deltaTime) {
+        var i;
+
+        // update active particles
+        if (firstActive < firstFree) {
+          for (i = firstActive; i < firstFree; i++)
+            particles[i].update(deltaTime);
+        }
+        if (firstFree < firstActive) {
+          for (i = firstActive; i < particles.length; i++)
+            particles[i].update(deltaTime);
+          for (i = 0; i < firstFree; i++)
+            particles[i].update(deltaTime);
+        }
+
+        // remove inactive particles
+        while (particles[firstActive].age >= duration && firstActive != firstFree) {
+          firstActive++;
+          if (firstActive == particles.length) firstActive = 0;
+        }
+
+
+      };
+      ParticlePool.prototype.draw = function (context, image) {
+        // draw active particles
+        if (firstActive < firstFree) {
+          for (i = firstActive; i < firstFree; i++)
+            particles[i].draw(context, image);
+        }
+        if (firstFree < firstActive) {
+          for (i = firstActive; i < particles.length; i++)
+            particles[i].draw(context, image);
+          for (i = 0; i < firstFree; i++)
+            particles[i].draw(context, image);
+        }
+      };
+      return ParticlePool;
+    })();
+    /*
+     * Putting it all together
+     */
+    (function (canvas) {
+      var context = canvas.getContext('2d'),
+        particles = new ParticlePool(settings.particles.length),
+        particleRate = settings.particles.length / settings.particles.duration, // particles/sec
+        time;
+
+      // get point on heart with -PI <= t <= PI
+      function pointOnHeart(t) {
+        return new Point(
+          160 * Math.pow(Math.sin(t), 3),
+          130 * Math.cos(t) - 50 * Math.cos(2 * t) - 20 * Math.cos(3 * t) - 10 * Math.cos(4 * t) + 25
+        );
+      }
+
+      // creating the RED particle image (heart mode)
+      var imageRed = (function () {
+        var canvas = document.createElement('canvas'),
+          context = canvas.getContext('2d');
+        canvas.width = settings.particles.size;
+        canvas.height = settings.particles.size;
+        function to(t) {
+          var point = pointOnHeart(t);
+          point.x = settings.particles.size / 2 + point.x * settings.particles.size / 350;
+          point.y = settings.particles.size / 2 - point.y * settings.particles.size / 350;
+          return point;
+        }
+        context.beginPath();
+        var t = -Math.PI;
+        var point = to(t);
+        context.moveTo(point.x, point.y);
+        while (t < Math.PI) {
+          t += 0.01;
+          point = to(t);
+          context.lineTo(point.x, point.y);
+        }
+        context.closePath();
+        context.fillStyle = '#f50b02';
+        context.fill();
+        var image = new Image();
+        image.src = canvas.toDataURL();
+        return image;
+      })();
+
+      // creating the PINK particle image (text mode)
+      var imagePink = (function () {
+        var canvas = document.createElement('canvas'),
+          context = canvas.getContext('2d');
+        canvas.width = settings.particles.size;
+        canvas.height = settings.particles.size;
+        function to(t) {
+          var point = pointOnHeart(t);
+          point.x = settings.particles.size / 2 + point.x * settings.particles.size / 350;
+          point.y = settings.particles.size / 2 - point.y * settings.particles.size / 350;
+          return point;
+        }
+        context.beginPath();
+        var t = -Math.PI;
+        var point = to(t);
+        context.moveTo(point.x, point.y);
+        while (t < Math.PI) {
+          t += 0.01;
+          point = to(t);
+          context.lineTo(point.x, point.y);
+        }
+        context.closePath();
+        context.fillStyle = '#ff69b4';
+        context.fill();
+        var image = new Image();
+        image.src = canvas.toDataURL();
+        return image;
+      })();
+
+      // ====== TEXT POINTS SYSTEM ======
+      // Returns array of character groups: [ {char, points: [{x,y},...], minX, maxX}, ... ]
+      var textCharGroups = [];
+      var textTotalChars = 0;
+
+      function generateTextCharGroups(text, canvasW, canvasH) {
+        var offCanvas = document.createElement('canvas');
+        var offCtx = offCanvas.getContext('2d');
+        offCanvas.width = canvasW;
+        offCanvas.height = canvasH;
+
+        // Determine font size to fit width
+        var fontSize = Math.min(canvasW / (text.length * 0.7), canvasH * 0.25);
+        fontSize = Math.max(fontSize, 28);
+        var fontStr = 'bold ' + Math.floor(fontSize) + 'px Arial, sans-serif';
+
+        offCtx.font = fontStr;
+        offCtx.textAlign = 'center';
+        offCtx.textBaseline = 'middle';
+
+        // Measure each character's position
+        var totalWidth = offCtx.measureText(text).width;
+        var startX = (canvasW - totalWidth) / 2;
+        var centerY = canvasH / 2;
+
+        var charBounds = [];
+        var curX = startX;
+        for (var c = 0; c < text.length; c++) {
+          var ch = text[c];
+          var cw = offCtx.measureText(ch).width;
+          charBounds.push({ char: ch, left: curX, right: curX + cw });
+          curX += cw;
+        }
+
+        // Draw full text
+        offCtx.fillStyle = '#fff';
+        offCtx.fillText(text, canvasW / 2, centerY);
+
+        // Sample pixels and assign to character groups
+        var imageData = offCtx.getImageData(0, 0, canvasW, canvasH);
+        var data = imageData.data;
+        var groups = [];
+        for (var c = 0; c < charBounds.length; c++) {
+          groups.push({ char: charBounds[c].char, points: [], minX: charBounds[c].left, maxX: charBounds[c].right });
+        }
+
+        var step = 3;
+        for (var y = 0; y < canvasH; y += step) {
+          for (var x = 0; x < canvasW; x += step) {
+            var idx = (y * canvasW + x) * 4;
+            if (data[idx + 3] > 128) {
+              // Find which character this pixel belongs to
+              for (var c = 0; c < charBounds.length; c++) {
+                if (x >= charBounds[c].left - 2 && x <= charBounds[c].right + 2) {
+                  groups[c].points.push({ x: x, y: y });
+                  break;
+                }
+              }
+            }
+          }
+        }
+
+        // Filter out empty groups (spaces)
+        return groups.filter(function (g) { return g.points.length > 0; });
+      }
+
+      // ====== HEART OUTLINE for text mode ======
+      // Generate points along the heart outline (thin), scaled to surround text
+      function generateHeartOutlinePoints(canvasW, canvasH, numPoints) {
+        var points = [];
+        var scale = Math.min(canvasW, canvasH) * 0.42; // heart size relative to canvas
+        for (var i = 0; i < numPoints; i++) {
+          var t = -Math.PI + (2 * Math.PI * i / numPoints);
+          var hx = 16 * Math.pow(Math.sin(t), 3);
+          var hy = -(13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t));
+          points.push({
+            x: canvasW / 2 + hx * (scale / 17),
+            y: canvasH / 2 + hy * (scale / 17)
+          });
+        }
+        return points;
+      }
+
+      // ====== STATE MACHINE ======
+      var MODE_HEART = 0;
+      var MODE_TEXT = 1;
+      var currentMode = MODE_HEART;
+      var modeTimer = 0;
+      var HEART_DURATION = 15; // seconds in heart mode
+      var TEXT_DURATION = 10;  // seconds in text mode
+      var textPointsReady = false;
+      var heartOutlinePoints = [];
+      var BUILD_TIME_PER_CHAR = 0.8; // seconds to build each character
+      var totalBuildTime = 0; // will be set when entering text mode
+
+      // render that thing!
+      function render() {
+        requestAnimationFrame(render);
+
+        var newTime = new Date().getTime() / 1000,
+          deltaTime = newTime - (time || newTime);
+        time = newTime;
+
+        // Cap deltaTime to avoid huge jumps on tab switch
+        if (deltaTime > 0.1) deltaTime = 0.1;
+
+        // Update mode timer
+        modeTimer += deltaTime;
+
+        if (currentMode === MODE_HEART && modeTimer >= HEART_DURATION) {
+          // Switch to text mode
+          currentMode = MODE_TEXT;
+          modeTimer = 0;
+          textCharGroups = generateTextCharGroups('Khánh Như', canvas.width, canvas.height);
+          textTotalChars = textCharGroups.length;
+          textPointsReady = textTotalChars > 0;
+          totalBuildTime = textTotalChars * BUILD_TIME_PER_CHAR;
+          heartOutlinePoints = generateHeartOutlinePoints(canvas.width, canvas.height, 200);
+        } else if (currentMode === MODE_TEXT && modeTimer >= TEXT_DURATION) {
+          // Switch back to heart mode
+          currentMode = MODE_HEART;
+          modeTimer = 0;
+        }
+
+        // Choose active image based on mode
+        var activeImage = (currentMode === MODE_TEXT) ? imagePink : imageRed;
+
+        // Clear canvas
+        context.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Create new particles
+        var amount = particleRate * deltaTime;
+
+        if (currentMode === MODE_HEART) {
+          // Heart mode: spawn on heart shape
+          for (var i = 0; i < amount; i++) {
+            var pos = pointOnHeart(Math.PI - 2 * Math.PI * Math.random());
+            var dir = pos.clone().length(settings.particles.velocity);
+            particles.add(canvas.width / 2 + pos.x, canvas.height / 2 - pos.y, dir.x, -dir.y);
+          }
+        } else if (currentMode === MODE_TEXT && textPointsReady) {
+          // --- Progressive character building ---
+          // Determine how many characters are currently "revealed"
+          var buildProgress = Math.min(modeTimer / totalBuildTime, 1); // 0..1
+          var charsRevealed = Math.min(Math.floor(buildProgress * textTotalChars) + 1, textTotalChars);
+          // Current character being built (partial)
+          var currentCharIdx = Math.min(Math.floor(modeTimer / BUILD_TIME_PER_CHAR), textTotalChars - 1);
+          var charProgress = (modeTimer / BUILD_TIME_PER_CHAR) - Math.floor(modeTimer / BUILD_TIME_PER_CHAR);
+          if (modeTimer >= totalBuildTime) charProgress = 1;
+
+          // Split particles: 70% for text, 30% for heart outline
+          var textAmount = amount * 0.7;
+          var outlineAmount = amount * 0.3;
+
+          // Spawn text particles
+          for (var i = 0; i < textAmount; i++) {
+            // Pick a character to spawn on
+            var charIdx;
+            if (modeTimer < totalBuildTime) {
+              // During building phase: bias heavily toward current character being built
+              if (Math.random() < 0.6) {
+                charIdx = currentCharIdx;
+              } else {
+                charIdx = Math.floor(Math.random() * charsRevealed);
+              }
+            } else {
+              // All characters built: spawn evenly
+              charIdx = Math.floor(Math.random() * textTotalChars);
+            }
+
+            var group = textCharGroups[charIdx];
+            if (group && group.points.length > 0) {
+              var tp;
+              // During building of current char, progressively reveal points (left to right)
+              if (charIdx === currentCharIdx && modeTimer < totalBuildTime) {
+                var maxIdx = Math.floor(charProgress * group.points.length);
+                maxIdx = Math.max(1, Math.min(maxIdx, group.points.length));
+                tp = group.points[Math.floor(Math.random() * maxIdx)];
+              } else {
+                tp = group.points[Math.floor(Math.random() * group.points.length)];
+              }
+              var vx = (Math.random() - 0.5) * 12;
+              var vy = (Math.random() - 0.5) * 12;
+              particles.add(tp.x, tp.y, vx, vy);
+            }
+          }
+
+          // --- Heart outline around text ---
+          for (var i = 0; i < outlineAmount; i++) {
+            var hp = heartOutlinePoints[Math.floor(Math.random() * heartOutlinePoints.length)];
+            // Slight jitter for organic look
+            var ox = hp.x + (Math.random() - 0.5) * 4;
+            var oy = hp.y + (Math.random() - 0.5) * 4;
+            var vx = (Math.random() - 0.5) * 10;
+            var vy = (Math.random() - 0.5) * 10;
+            particles.add(ox, oy, vx, vy);
+          }
+        }
+
+        // Update and draw particles
+        particles.update(deltaTime);
+        particles.draw(context, activeImage);
+      }
+
+      // handle (re-)sizing of the canvas
+      function onResize() {
+        canvas.width = canvas.clientWidth;
+        canvas.height = canvas.clientHeight;
+      }
+      window.onresize = onResize;
+
+      // Mouse interaction
+      canvas.addEventListener('mousemove', function (e) {
+        var rect = canvas.getBoundingClientRect();
+        mouse.x = e.clientX - rect.left;
+        mouse.y = e.clientY - rect.top;
+        mouse.active = true;
+      });
+      canvas.addEventListener('mouseleave', function () {
+        mouse.active = false;
+      });
+      // Touch support for mobile
+      canvas.addEventListener('touchmove', function (e) {
+        e.preventDefault();
+        var rect = canvas.getBoundingClientRect();
+        var touch = e.touches[0];
+        mouse.x = touch.clientX - rect.left;
+        mouse.y = touch.clientY - rect.top;
+        mouse.active = true;
+      }, { passive: false });
+      canvas.addEventListener('touchend', function () {
+        mouse.active = false;
+      });
+
+      // delay rendering bootstrap
+      setTimeout(function () {
+        onResize();
+        render();
+      }, 10);
+    })(document.getElementById('pinkboard'));
+  </script>
+</BODY>
+
+</HTML>

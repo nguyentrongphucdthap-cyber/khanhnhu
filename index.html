@@ -1,1 +1,94 @@
-index.html
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dành cho Khánh Như ❤️</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@400;700&family=Dancing+Script:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="bg-hearts" id="bgHearts"></div>
+
+    <div class="container">
+        <header class="hero">
+            <h1 style="font-family: 'Dancing Script', cursive;">đây là những thứ anh làm cho em</h1>
+            <p>Mỗi món quà nhỏ đều chứa đựng tình cảm to lớn. ✨</p>
+        </header>
+
+        <main class="modules-grid">
+            <!-- Arcade -->
+            <a href="arcade/index.html" class="card">
+                <div class="card-icon">🎮</div>
+                <h3>Khu Trò Chơi</h3>
+                <p>Nơi giải trí với những mini-game cực kỳ vui nhộn dành riêng cho em.</p>
+                <div class="card-arrow">→</div>
+            </a>
+
+            <!-- Bip Bo -->
+            <a href="bipbo/index.html" class="card">
+                <div class="card-icon">🐾</div>
+                <h3>Truy Bắt Bíp Bơ</h3>
+                <p>Cùng bắt lấy những em thú cưng dễ thương và nâng cấp cửa hàng nhé!</p>
+                <div class="card-arrow">→</div>
+            </a>
+
+            <!-- Heart -->
+            <a href="heart/index.html" class="card">
+                <div class="card-icon">💖</div>
+                <h3>Nhịp Đập Trái Tim</h3>
+                <p>Một góc nhỏ lung linh với những hiệu ứng trái tim ngọt ngào.</p>
+                <div class="card-arrow">→</div>
+            </a>
+
+            <!-- Mo Khoa -->
+            <a href="mo-khoa/index.html" class="card">
+                <div class="card-icon">🔑</div>
+                <h3>Mở Khóa Bí Mật</h3>
+                <p>Một thử thách nhỏ để khám phá những điều thú vị bên trong.</p>
+                <div class="card-arrow">→</div>
+            </a>
+
+            <!-- Qua -->
+            <a href="qua/index.html" class="card">
+                <div class="card-icon">🎁</div>
+                <h3>Hộp Quà Bất Ngờ</h3>
+                <p>Mở ra những điều bất ngờ mà anh đã chuẩn bị kỹ lưỡng.</p>
+                <div class="card-arrow">→</div>
+            </a>
+
+            <!-- Valentine -->
+            <a href="valentine/index.html" class="card">
+                <div class="card-icon">🌹</div>
+                <h3>Góc Valentine</h3>
+                <p>Kỷ niệm ngọt ngào và những lời chúc chân thành nhất.</p>
+                <div class="card-arrow">→</div>
+            </a>
+        </main>
+
+        <footer>
+            <p>Made with love for Khánh Như 💖</p>
+        </footer>
+    </div>
+
+    <script>
+        function createHeart() {
+            const heart = document.createElement('div');
+            heart.className = 'heart-particle';
+            heart.innerHTML = '❤️';
+            heart.style.left = Math.random() * 100 + 'vw';
+            heart.style.fontSize = (Math.random() * 20 + 10) + 'px';
+            heart.style.animationDuration = (Math.random() * 10 + 5) + 's';
+            document.getElementById('bgHearts').appendChild(heart);
+
+            setTimeout(() => {
+                heart.remove();
+            }, 15000);
+        }
+
+        setInterval(createHeart, 800);
+    </script>
+</body>
+</html>
